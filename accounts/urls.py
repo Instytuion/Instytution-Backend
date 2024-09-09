@@ -4,6 +4,7 @@ from .views import (
     UserOTPVerifyView,
     SignInUserView,
     ResentOTPView,
+    SubAdminCreateView
 )
 
 urlpatterns = [
@@ -11,4 +12,5 @@ urlpatterns = [
     path('verify-otp/', UserOTPVerifyView.as_view(), name='verify_otp'),
     path('sign-in/', SignInUserView.as_view(), name='sign_in'),
     path('resent-otp/', ResentOTPView.as_view(), name='resent_otp'),
+    path('subadmin-create/', SubAdminCreateView.as_view(), name='subAdmin_create'),
 ]

@@ -7,9 +7,10 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, min_length=4, required=True)
 
+
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        fields = ['id', 'email', 'password', 'role', 'first_name', 'last_name', 'profile_picture', 'is_active']
 
     def validate_email(self, value):
         """Check if the email is already in use."""
