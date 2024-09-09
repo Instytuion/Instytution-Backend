@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from .manager import CustomUserManager
 from cloudinary.models import CloudinaryField
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 ROLE_CHOICES = (
@@ -29,6 +30,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+    
+    
+    @property
+    def tokens(self) -> dict[str,str]:
+        print('reached in gen tokens')
+        
+        referesh = RefreshToken.for_user(self)
+        
+        return{
+           'refresh': str(referesh),
+            'access': str(referesh.access_token),
+        } 
+
 
     def __str__(self):
         return self.email

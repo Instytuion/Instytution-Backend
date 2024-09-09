@@ -2,12 +2,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.cache import cache
-from .serializers import UserSerializer,OTPSerializer,SignInSerializer
+from .serializers import (
+    UserSerializer,
+    OTPSerializer,
+    SignInSerializer,
+    GoogleSignInSerializer,
+)
 from utils.utils import generate_otp , send_otp_email
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .permissions import IsAdminAndAuthenticated
+from rest_framework.generics import GenericAPIView
 
 
 class UserSignUpView(APIView):
@@ -206,5 +212,21 @@ class SubAdminCreateView(APIView):
         
 
 
+class GoogleOauthSignInview(GenericAPIView):
+    """
+    Google OAuth sign-in view.
+    """
+    serializer_class=GoogleSignInSerializer
+
+    def post(self, request):
+        """
+        Handle Google OAuth sign-in.
+        Returns Response object containing the access token.
+        """
+        print(request.data)
+        serializer=self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data=((serializer.validated_data)['access_token'])
+        return Response(data, status=status.HTTP_200_OK) 
 
 
