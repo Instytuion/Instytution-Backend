@@ -121,6 +121,46 @@ class SignInUserView(APIView):
             )
 
 
+class ResentOTPView(APIView):
+    
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        try:
+            if serializer.is_valid():
+                email = serializer.validated_data['email']
+                cached_otp = cache.get(f"otp_{email}")
+
+                if cached_otp:
+                    remaining_time = cache.ttl(f"otp_{email}")
+                    return Response({
+                        "message": "OTP already sent.",
+                        "remaining_time": remaining_time,
+                        "detail": "Please wait before requesting a new OTP."
+                    }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+                
+                resent_otp = generate_otp()
+                email = serializer.validated_data['email']
+                cache.set(f"otp_{email}", resent_otp, timeout=120)
+                print('generated_otp:',resent_otp)
+
+
+
+                username = email.split('@')[0]
+                try:
+                    send_otp_email(email, username, resent_otp)
+                    return Response({"message": "OTP resent successfully."}, status=status.HTTP_200_OK)
+                except Exception as e:
+                    cache.delete(f"otp_{email}")
+                    return Response(
+                        {"error": str(e)},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print('error:',e)
+            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 
 
