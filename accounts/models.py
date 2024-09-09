@@ -9,7 +9,7 @@ ROLE_CHOICES = (
     ('admin', 'Admin'),
     ('user', 'User'),
     ('instructor', 'Instructor'),
-    ('course_admin', 'Coursen Admin'),
+    ('course_admin', 'Course Admin'),
     ('shop_admin', 'Shop Admin')
 )
 
