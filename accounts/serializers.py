@@ -31,9 +31,9 @@ class OTPSerializer(serializers.Serializer):
         print('cached_otp:',cached_otp)
         if cached_otp is None:
             cache.delete(f"otp_{email}")
-            raise serializers.ValidationError("OTP has expired or does not exist.")
+            raise serializers.ValidationError({"otp": "OTP has expired."})
         if cached_otp != otp:
-            raise serializers.ValidationError("Invalid OTP.")
+            raise serializers.ValidationError({"otp": "Invalid OTP."})
         
         return data
     
