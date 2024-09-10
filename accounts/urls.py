@@ -8,6 +8,7 @@ from .views import (
     GoogleOauthSignInview,
     UserProfileRetrieveUpdateView,
 )
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('sign-up/', UserSignUpView.as_view(), name='user_sign_up'),
@@ -17,5 +18,5 @@ urlpatterns = [
     path('subadmin-create/', SubAdminCreateView.as_view(), name='subAdmin_create'),
     path('google-auth/', GoogleOauthSignInview.as_view(), name='google_auth'),
     path('user-profile/', UserProfileRetrieveUpdateView.as_view(), name='user-profile'),
-
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
