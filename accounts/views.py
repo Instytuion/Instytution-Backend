@@ -56,8 +56,9 @@ class UserOTPVerifyView(APIView):
 
                 email = serializer.validated_data['email']
                 password = serializer.validated_data['password']
+                register_mode='email'
 
-                user = CustomUser.objects.create_user(email=email, password=password, role='user')
+                user = CustomUser.objects.create_user(email=email, password=password, register_mode=register_mode, role='user')
 
                 if user:
                     cache.delete(f"otp_{email}")
@@ -186,8 +187,14 @@ class SubAdminCreateView(APIView):
                 password = serializer.validated_data.pop('password')
 
                 extra_feilds = serializer.validated_data
+                register_mode = 'email'
 
-                user = CustomUser.objects.create_user(email=email, password=password, **extra_feilds)
+                user = CustomUser.objects.create_user(
+                    email=email,
+                    password=password,
+                    register_mode=register_mode,
+                    **extra_feilds
+                )
                 
                 refresh = RefreshToken.for_user(user)
                 access_token = str(refresh.access_token)
