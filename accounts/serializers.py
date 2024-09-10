@@ -78,7 +78,6 @@ class GoogleSignInSerializer(serializers.Serializer):
         Validate the access token and register the user if valid.
         """
         user_data=Google_signin.validate(access_token)
-        print('userdata...........',user_data)
         try:
             user_data['sub']  
         except:
@@ -93,8 +92,8 @@ class GoogleSignInSerializer(serializers.Serializer):
         user, tokens = register_google_user(email)
         user_serializer = UserSerializer(user)
         return {
-            "access_token": tokens['access'],
-            "refresh_token": tokens['refresh'],
+            "access": tokens['access'],
+            "refresh": tokens['refresh'],
             "user": user_serializer.data,
             "message": constants.USER_LOGGED_IN_SUCCESSFULLY,
         }

@@ -196,17 +196,12 @@ class SubAdminCreateView(APIView):
                     register_mode=register_mode,
                     **extra_feilds
                 )
-                
-                refresh = RefreshToken.for_user(user)
-                access_token = str(refresh.access_token)
 
                 user_serializer = UserSerializer(user)
 
                 return Response({
                     "message": "User created successfully.",
-                    "user": user_serializer.data,
-                    "refresh": str(refresh),
-                    "access": access_token
+                    "user": user_serializer.data
                 }, status=status.HTTP_201_CREATED)
                 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
