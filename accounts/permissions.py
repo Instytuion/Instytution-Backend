@@ -5,8 +5,15 @@ class IsAdminAndAuthenticated(permissions.BasePermission):
     Custom permission to grant access only to users with the 'admin' role and who are authenticated.
     """
 
-    def has_permission(self, request,):
-        if not request.user or not request.user.is_authenticated:
-            return False
-        
-        return getattr(request.user, 'role', None) == 'admin'
+    def has_permission(self, request,view):
+        return request.user.is_authenticated and request.user.role == 'admin'
+    
+
+class IsCourseAdmin(permissions.BasePermission):
+    """
+    Custom permission to grant access only to users with the 'course_admin' role and who are authenticated.
+    """
+    def has_permission(self, request,view):
+        return request.user.is_authenticated and request.user.role == 'course_admin'
+    
+

@@ -13,7 +13,7 @@ class CustomUserManager(BaseUserManager):
             user.set_password(password)
         else:  
             raise ValueError(_('The Email field must be set'))
-
+        user.is_active = True
         user.save(using=self._db)
         return user
 
