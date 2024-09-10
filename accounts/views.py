@@ -14,7 +14,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .permissions import IsAdminAndAuthenticated
 from rest_framework.generics import GenericAPIView
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import RetrieveUpdateAPIView
 
 class UserSignUpView(APIView):
 
@@ -236,4 +237,13 @@ class GoogleOauthSignInview(GenericAPIView):
         data=((serializer.validated_data)['access_token'])
         return Response(data, status=status.HTTP_200_OK) 
 
+class UserProfileRetrieveUpdateView(RetrieveUpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_object(self):
+        """
+        Override to return the current user.
+        """
+        return self.request.user
