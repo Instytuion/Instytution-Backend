@@ -19,7 +19,6 @@ class Google_signin():
         """
         try:
             id_info=id_token.verify_oauth2_token(acess_token,requests.Request(),settings.GOOGLE_CLIENT_ID)
-            print('id_info..........',id_info)
             if 'accounts.google.com' in id_info['iss']:
                 return id_info
         except Exception as e:
@@ -40,9 +39,12 @@ def register_google_user(email):
     Returns User information along with access and refresh tokens.
     """
     user = CustomUser.objects.filter(email=email)
+
     if user.exists():
         return login_google_user(email)
     else:
-        register_user = CustomUser.objects.create_user(email)
+        password =  settings.CUSTOM_PASSWORD_FOR_AUTH
+        register_mode='google'
+        register_user = CustomUser.objects.create_user(email, password, register_mode=register_mode)
         register_user.save()
         return login_google_user(email)
