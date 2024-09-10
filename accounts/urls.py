@@ -5,7 +5,8 @@ from .views import (
     SignInUserView,
     ResentOTPView,
     SubAdminCreateView,
-    GoogleOauthSignInview
+    GoogleOauthSignInview,
+    UserProfileRetrieveUpdateView,
 )
 
 urlpatterns = [
@@ -14,5 +15,7 @@ urlpatterns = [
     path('sign-in/', SignInUserView.as_view(), name='sign_in'),
     path('resent-otp/', ResentOTPView.as_view(), name='resent_otp'),
     path('subadmin-create/', SubAdminCreateView.as_view(), name='subAdmin_create'),
-    path('google-auth/', GoogleOauthSignInview.as_view(), name='subAdmin_create'),
+    path('google-auth/', GoogleOauthSignInview.as_view(), name='google_auth'),
+    path('user-profile/', UserProfileRetrieveUpdateView.as_view(), name='user-profile'),
+
 ]

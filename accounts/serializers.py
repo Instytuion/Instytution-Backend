@@ -14,13 +14,32 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'password', 'role', 'first_name', 'last_name', 'profile_picture', 'is_active']
+        fields = ['id', 'email', 'password', 'role', 'first_name', 'last_name', 'profile_picture', 'is_active', 'register_mode']
 
     def validate_email(self, value):
         """Check if the email is already in use."""
         if CustomUser.objects.filter(email=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return value
+    
+    def validate(self, data):
+        """
+        Ensure password is provided only for creation (POST), not for updates (PATCH/PUT).
+        """
+        if not self.instance and not data.get('password'):
+            raise serializers.ValidationError({"password": "Password is required for new users."})
+        return data
+        
+    def update(self, instance, validated_data):
+        """
+        Update user instance with validated data. Do not handle password updates.
+        """
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 class OTPSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
