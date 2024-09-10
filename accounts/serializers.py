@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from .models import CustomUser
 from django.core.cache import cache
-  
+from .utils import Google_signin, register_google_user
+from rest_framework.exceptions import AuthenticationFailed
+from accounts import constants
+from django.conf import settings
+
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
@@ -41,5 +45,39 @@ class OTPSerializer(serializers.Serializer):
 class SignInSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
+
+
+
+class GoogleSignInSerializer(serializers.Serializer):
+    """
+    Serializer for Google sign-in.
+    """
+    access_token=serializers.CharField()
+
+    def validate_access_token(self, access_token):
+        """
+        Validate the access token and register the user if valid.
+        """
+        user_data=Google_signin.validate(access_token)
+        print('userdata...........',user_data)
+        try:
+            user_data['sub']  
+        except:
+            raise serializers.ValidationError(
+                constants.ERROR_TOKEN_EXPIRED_OR_INVALID
+            )
+        
+        if user_data['aud'] != settings.GOOGLE_CLIENT_ID:
+                raise AuthenticationFailed(constants.ERROR_VERIFY_USER)
+
+        email=user_data['email']
+        user, tokens = register_google_user(email)
+        user_serializer = UserSerializer(user)
+        return {
+            "access_token": tokens['access'],
+            "refresh_token": tokens['refresh'],
+            "user": user_serializer.data,
+            "message": constants.USER_LOGGED_IN_SUCCESSFULLY,
+        }
 
     
