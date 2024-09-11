@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #my apps
     'accounts',
+    'courses',
     #third party
     'rest_framework',
     'cloudinary',
