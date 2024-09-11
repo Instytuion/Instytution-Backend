@@ -233,6 +233,7 @@ class GoogleOauthSignInview(GenericAPIView):
         return Response(data, status=status.HTTP_200_OK) 
 
 class UserProfileRetrieveUpdateView(RetrieveUpdateAPIView):
+    
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]

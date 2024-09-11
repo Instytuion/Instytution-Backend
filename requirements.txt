@@ -26,6 +26,7 @@ httplib2==0.22.0
 hyperlink==21.0.0
 idna==3.8
 incremental==24.7.2
+pillow==10.4.0
 proto-plus==1.24.0
 protobuf==5.28.0
 psycopg2==2.9.9
