@@ -8,14 +8,14 @@ from django.conf import settings
 
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(required=True)
-    password = serializers.CharField(write_only=True, min_length=4, required=True)
+    email         = serializers.EmailField(required=True)
+    password      = serializers.CharField(write_only=True, min_length=4, required=True)
+    register_mode = serializers.CharField(required=False)
     profile_picture = serializers.ImageField(use_url=True)
 
-
     class Meta:
-        model = CustomUser
-        fields = ['id', 'email', 'password', 'role', 'first_name', 'last_name', 'profile_picture', 'is_active', 'register_mode']
+        model    = CustomUser
+        fields   = ['id', 'email', 'password', 'role', 'first_name', 'last_name', 'profile_picture', 'is_active', 'register_mode']
 
     def validate_email(self, value):
         """Check if the email is already in use."""
@@ -43,14 +43,14 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class OTPSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    otp = serializers.CharField(required=True, min_length=6, max_length=6)
+    email    = serializers.EmailField(required=True)
+    otp      = serializers.CharField(required=True, min_length=6, max_length=6)
     password = serializers.CharField(required=True)
 
     def validate(self, data):
         """Validate that the OTP matches the one stored in the cache."""
         email = data.get('email')
-        otp = data.get('otp')
+        otp   = data.get('otp')
         
         cached_otp = cache.get(f"otp_{email}")
         print('cached_otp:',cached_otp)

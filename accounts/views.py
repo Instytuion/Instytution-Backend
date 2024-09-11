@@ -12,7 +12,7 @@ from utils.utils import generate_otp , send_otp_email
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
-from .permissions import IsAdminAndAuthenticated
+from .permissions import IsAdminAndAuthenticated,IsCourseAdmin
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveUpdateAPIView
@@ -176,10 +176,13 @@ class ResentOTPView(APIView):
 
 
 
-class SubAdminCreateView(APIView):
+class CustomreAbstractCrateView(APIView):
+
+    permission_classes = []
+
     def post(self , request):
 
-        permission_classes = [IsAdminAndAuthenticated]
+        
         serializer = UserSerializer(data=request.data) 
 
         try:
@@ -196,6 +199,7 @@ class SubAdminCreateView(APIView):
                     register_mode=register_mode,
                     **extra_feilds
                 )
+                
 
                 user_serializer = UserSerializer(user)
 
@@ -213,6 +217,20 @@ class SubAdminCreateView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
+
+class SubAdminCreateView(CustomreAbstractCrateView):
+    """
+    This View handle the Creation of Subadmin 
+    """
+
+    permission_classes = [IsAdminAndAuthenticated]
+class InstructorCreateView(CustomreAbstractCrateView):
+    """
+    This View handle the Creation of CourseAdmin 
+    """
+    permission_classes = [IsCourseAdmin]
+
+
 
 
 class GoogleOauthSignInview(GenericAPIView):
