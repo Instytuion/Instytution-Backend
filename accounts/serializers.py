@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     email         = serializers.EmailField(required=True)
     password      = serializers.CharField(write_only=True, min_length=4, required=True)
     register_mode = serializers.CharField(required=False)
+    profile_picture = serializers.ImageField(use_url=True)
 
     class Meta:
         model    = CustomUser
