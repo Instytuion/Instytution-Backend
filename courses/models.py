@@ -130,3 +130,4 @@ class Session(ModelTrackeBaseClass):
         choices=TIME_CHOICES,
         default='morning'
     )
+    
