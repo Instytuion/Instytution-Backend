@@ -7,6 +7,7 @@ from .serializers import (
     OTPSerializer,
     SignInSerializer,
     GoogleSignInSerializer,
+    VerifyEmailUpdateOTpSerializer,
 )
 from utils.utils import generate_otp , send_otp_email
 from .models import CustomUser
@@ -261,3 +262,42 @@ class UserProfileRetrieveUpdateView(RetrieveUpdateAPIView):
         Override to return the current user.
         """
         return self.request.user
+    
+
+    
+class UserProfileVerifyUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        print(request.data)
+        otp_serializer = VerifyEmailUpdateOTpSerializer(data=request.data)
+
+        if not otp_serializer.is_valid():
+            return Response(otp_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        validated_data = otp_serializer.validated_data
+        user = request.user
+
+        # Prepare update data conditionally
+        update_data = {
+            'email': validated_data.get('email', user.email),
+            'first_name': validated_data.get('first_name', user.first_name),
+            'last_name': validated_data.get('last_name', user.last_name),
+        }
+
+        # Remove any None values from update_data
+        update_data = {k: v for k, v in update_data.items() if v is not None}
+
+        if update_data:
+            user_serializer = UserSerializer(user, data=update_data, partial=True)
+            if user_serializer.is_valid():
+                user_serializer.save()
+                return Response({
+                    "message": "Profile updated successfully",
+                    "user": user_serializer.data
+                }, status=status.HTTP_200_OK)
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "No valid data to update."}, status=status.HTTP_400_BAD_REQUEST)
+
+                
