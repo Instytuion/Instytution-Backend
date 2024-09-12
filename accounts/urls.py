@@ -12,4 +12,5 @@ urlpatterns = [
     path('google-auth/', GoogleOauthSignInview.as_view(), name='google_auth'),
     path('user-profile/', UserProfileRetrieveUpdateView.as_view(), name='user-profile'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('user-profile/verify-update/', UserProfileVerifyUpdateView.as_view(), name='user-profile-verify-update'),
 ]

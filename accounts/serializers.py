@@ -9,9 +9,9 @@ from django.conf import settings
 
 class UserSerializer(serializers.ModelSerializer):
     email         = serializers.EmailField(required=True)
-    password      = serializers.CharField(write_only=True, min_length=4, required=True)
+    password      = serializers.CharField(write_only=True, min_length=4, required=False)
     register_mode = serializers.CharField(required=False)
-    profile_picture = serializers.ImageField(use_url=True)
+    profile_picture = serializers.ImageField(use_url=True, required=False)
 
     class Meta:
         model    = CustomUser
@@ -23,13 +23,13 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return value
     
-    def validate(self, data):
-        """
-        Ensure password is provided only for creation (POST), not for updates (PATCH/PUT).
-        """
-        if not self.instance and not data.get('password'):
-            raise serializers.ValidationError({"password": "Password is required for new users."})
-        return data
+    # def validate(self, data):
+    #     """
+    #     Ensure password is provided only for creation (POST), not for updates (PATCH/PUT).
+    #     """
+    #     if not self.instance and not data.get('password'):
+    #         raise serializers.ValidationError({"password": "Password is required for new users."})
+    #     return data
         
     def update(self, instance, validated_data):
         """
@@ -40,7 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
 
         instance.save()
-        return instance
+        return instance 
 
 class OTPSerializer(serializers.Serializer):
     email    = serializers.EmailField(required=True)
@@ -48,19 +48,20 @@ class OTPSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
 
     def validate(self, data):
-        """Validate that the OTP matches the one stored in the cache."""
         email = data.get('email')
-        otp   = data.get('otp')
-        
+        otp = data.get('otp')
+
+        # Validate that the OTP matches the one stored in the cache.
         cached_otp = cache.get(f"otp_{email}")
-        print('cached_otp:',cached_otp)
+        print('cached_otp:', cached_otp)
         if cached_otp is None:
-            cache.delete(f"otp_{email}")
             raise serializers.ValidationError({"otp": "OTP has expired."})
         if cached_otp != otp:
             raise serializers.ValidationError({"otp": "Invalid OTP."})
-        
+
         return data
+    
+
     
 class SignInSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -99,4 +100,25 @@ class GoogleSignInSerializer(serializers.Serializer):
             "message": constants.USER_LOGGED_IN_SUCCESSFULLY,
         }
 
-    
+class VerifyEmailUpdateOTpSerializer(serializers.Serializer):
+    email      = serializers.EmailField(required=True)
+    otp        = serializers.CharField(required=True, min_length=6, max_length=6)
+    first_name = serializers.CharField(required=False)
+    last_name  = serializers.CharField(required=False)
+
+    def validate(self, data):
+        email = data.get('email')
+        otp = data.get('otp')
+
+        # Validate that the OTP matches the one stored in the cache.
+        cached_otp = cache.get(f"otp_{email}")
+        print('cached_otp:', cached_otp)
+        if cached_otp is None:
+            raise serializers.ValidationError({"otp": "OTP has expired."})
+        if cached_otp != otp:
+            raise serializers.ValidationError({"otp": "Invalid OTP."})
+
+        return data
+
+        
+
