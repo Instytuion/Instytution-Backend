@@ -8,6 +8,7 @@ class RetrieveProgramsSerializer(serializers.Serializer):
     image = serializers.ImageField(use_url=True, required=True)
 
 class RetrieveLatestCourseSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=True)
     program_name = serializers.SerializerMethodField()
     class Meta:
         model    = Course
