@@ -1,5 +1,15 @@
 from django.contrib import admin
-from .models import Program, LessonImage, LessonVideo, LessonPDF, Lesson, Course, Batch, Session
+from .models import (
+    Program, 
+    LessonImage, 
+    LessonVideo, 
+    LessonPDF, 
+    Lesson, 
+    Course, 
+    Batch, 
+    Session,
+    CourseWeekDescription
+    )
 
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
@@ -33,7 +43,7 @@ class LessonAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'program', 'duration', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    list_display = ('name', 'price', 'program', 'duration', 'course_level', 'created_by', 'updated_by', 'created_at', 'updated_at')
     search_fields = ('name', 'description', 'skill', 'prerequisite')
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'program')
 
@@ -48,3 +58,10 @@ class SessionAdmin(admin.ModelAdmin):
     list_display = ('batch', 'lesson', 'time_of_day', 'created_by', 'updated_by', 'created_at', 'updated_at')
     search_fields = ('batch__name', 'lesson__name')
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'batch', 'lesson', 'time_of_day')
+
+
+@admin.register(CourseWeekDescription)
+class CourseWeekDescriptionAdmin(admin.ModelAdmin):
+    list_display = ('course', 'week', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    search_fields = ('course', 'week',)
+    list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'course', 'week')
