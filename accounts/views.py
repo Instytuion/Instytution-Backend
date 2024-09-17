@@ -97,37 +97,39 @@ class SignInUserView(APIView):
         serializer = SignInSerializer(data=request.data)
         
         try:
-            if serializer.is_valid():
-                email = serializer.validated_data['email']
-                password = serializer.validated_data['password']
+            if not serializer.is_valid():
+                error_message = serializer.errors.get('email', ['An error occurred'])[0]
+                return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)  
+            
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
 
-                # Find the user by email
-                user = CustomUser.objects.filter(email=email).first()
+            # Find the user by email
+            user = CustomUser.objects.filter(email=email).first()
 
-                if user and not user.is_active:
-                    return Response({
-                        "error": "You are blocked by admin. Please contact the admin."
-                    }, status=status.HTTP_403_FORBIDDEN)
-                
-                if user and check_password(password, user.password):
-                    # Generate tokens
-                    refresh = RefreshToken.for_user(user)
-                    access_token = str(refresh.access_token)
-
-                    # Serialize user data
-                    user_serializer = UserSerializer(user)
-
-                    return Response({
-                        "message": "Login successful.",
-                        "user": user_serializer.data,
-                        "refresh": str(refresh),
-                        "access": access_token
-                    }, status=status.HTTP_200_OK)
-                else:
-                    return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+            if not user:
+                return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
         
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if not user.is_active:
+                return Response({"error": "You are blocked by admin. Please contact the admin."}, status=status.HTTP_403_FORBIDDEN)
         
+            if not check_password(password, user.password):
+                return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Generate tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            # Serialize user data
+            user_serializer = UserSerializer(user)
+
+            return Response({
+            "message": "Login successful.",
+            "user": user_serializer.data,
+            "refresh": str(refresh),
+            "access": access_token
+            }, status=status.HTTP_200_OK)    
+                  
         except Exception as e:
             print('error:', e)
             return Response(
@@ -227,7 +229,7 @@ class SubAdminCreateView(CustomreAbstractCrateView):
     permission_classes = [IsAdminAndAuthenticated]
 class InstructorCreateView(CustomreAbstractCrateView):
     """
-    This View handle the Creation of CourseAdmin 
+    This View handle the Creation of Instructor 
     """
     permission_classes = [IsCourseAdmin]
 
