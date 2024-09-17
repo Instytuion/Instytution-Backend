@@ -13,7 +13,7 @@ class RetrieveCourseSerializer(serializers.ModelSerializer):
     week_descriptions = serializers.SerializerMethodField(read_only = True)
     class Meta:
         model    = Course
-        fields = ['name', 'price', 'program_name', 'duration', 'image', 'week_descriptions']
+        fields = ['name', 'price', 'program_name', 'duration', 'image', 'description', 'skill', 'prerequisite', 'week_descriptions']
 
     def get_program_name(self, obj):
         return self.context.get('program_name',None)
