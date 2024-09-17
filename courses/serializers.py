@@ -9,10 +9,16 @@ class RetrieveProgramsSerializer(serializers.Serializer):
 
 class RetrieveCourseSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True, required=True)
-    program_name = serializers.SerializerMethodField()
+    program_name = serializers.SerializerMethodField(read_only = True)
+    week_descriptions = serializers.SerializerMethodField(read_only = True)
     class Meta:
         model    = Course
-        fields   = ['name', 'price', 'program_name', 'duration', 'image']
+        fields = ['name', 'price', 'program_name', 'duration', 'image', 'week_descriptions']
 
     def get_program_name(self, obj):
-        return obj.program.name if obj.program else None
+        return self.context.get('program_name',None)
+    
+    def get_week_descriptions(self, obj):
+        week_descriptions = self.context.get('week_descriptions', [])
+        return [{'week': wd.week, 'description': wd.description} for wd in week_descriptions]
+    
