@@ -67,6 +67,21 @@ class SignInSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
 
+    def validate_email(self, value):
+        """
+        Validates the email to check if the user is registered via Google. 
+        If so, prompts the user to log in with Google.
+        """
+        user = CustomUser.objects.filter(email=value).first()
+    
+        if user and user.register_mode == 'google':
+            raise serializers.ValidationError("This email is registered via Google. Please Sign in with Google.")
+        
+        return value
+            
+
+
+
 
 
 class GoogleSignInSerializer(serializers.Serializer):
@@ -100,7 +115,12 @@ class GoogleSignInSerializer(serializers.Serializer):
             "message": constants.USER_LOGGED_IN_SUCCESSFULLY,
         }
 
+
+
 class VerifyEmailUpdateOTpSerializer(serializers.Serializer):
+    """
+    Serializer for updating profile with email of a CustomUser.
+    """
     email      = serializers.EmailField(required=True)
     otp        = serializers.CharField(required=True, min_length=6, max_length=6)
     first_name = serializers.CharField(required=False)
