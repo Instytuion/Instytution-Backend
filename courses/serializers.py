@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Course,
+    Batch
 )
 
 class RetrieveProgramsSerializer(serializers.Serializer):
@@ -12,7 +13,7 @@ class RetrieveCourseSerializer(serializers.ModelSerializer):
     program_name = serializers.SerializerMethodField(read_only = True)
     week_descriptions = serializers.SerializerMethodField(read_only = True)
     class Meta:
-        model    = Course
+        model = Course
         fields = [
             'name', 'price', 'program_name', 'duration', 'image', 
             'description', 'skill', 'prerequisite', 'week_descriptions', 'course_level'
@@ -25,3 +26,19 @@ class RetrieveCourseSerializer(serializers.ModelSerializer):
         week_descriptions = self.context.get('week_descriptions', [])
         return [{'week': wd.week, 'description': wd.description} for wd in week_descriptions]
     
+class BatchSerializer(serializers.ModelSerializer):
+    course_name=serializers.CharField(source='course.name', read_only=True)
+    instructor_name=serializers.SerializerMethodField()
+
+
+    class Meta:
+        model = Batch
+
+        fields = ['id', 'name', 'course_name', 'instructor_name', 'start_date', 'end_date', 'time_slot']
+
+    def get_instructor_name(self, obj):
+        first_name = obj.instructor.first_name
+        last_name = obj.instructor.last_name
+
+        return f"{first_name} {last_name}"
+        
