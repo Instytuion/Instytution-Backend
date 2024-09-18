@@ -403,6 +403,4 @@ class PasswordResetConfirmView(GenericAPIView):
         except Exception as e:
             print(f"Error in password reset: {str(e)}")
             return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        
-        
+              
