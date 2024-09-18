@@ -5,9 +5,10 @@ from .serializers import(
 from .models import(
     Program,
     Course,
+    CourseWeekDescription,
 )
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 class RetrieveProgramsView(ListAPIView):
     '''
@@ -33,4 +34,33 @@ class RetrieveProgramCoursesView(ListAPIView):
         
         program_name = self.kwargs['program_name']
         print('program name in url is -', program_name)
-        return Course.objects.filter(program__name__iexact=program_name).select_related('program')
+        return Course.objects.filter(program__name__iexact=program_name)
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['program_name'] = self.kwargs.get('program_name')
+        return context
+    
+class RetrieveCourseDetailView(RetrieveAPIView):
+    '''
+    to fetch detail data of a specific course by course in the utl.
+    '''
+    serializer_class = RetrieveCourseSerializer
+    lookup_field = 'name'
+
+    def get_queryset(self):
+        course_name = self.kwargs['name']
+        print(f"Lookup name from URL: {course_name}")
+        queryset = Course.objects.filter(name__iexact = course_name)
+        return queryset
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        queryset = self.get_queryset().first()
+        if queryset:
+            week_descriptions = CourseWeekDescription.objects.filter(course=queryset)
+            context['week_descriptions'] = week_descriptions
+        else:
+            print('inside RetrieveCourseDetailView. queryset obj None.')
+        return context
+    
