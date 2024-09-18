@@ -64,3 +64,18 @@ class RetrieveCourseDetailView(RetrieveAPIView):
             print('inside RetrieveCourseDetailView. queryset obj None.')
         return context
     
+class RetrieveRelatedCoursesView(ListAPIView):
+    '''
+    to fetch course data related to the specified course name in the url.
+    '''
+    serializer_class = RetrieveCourseSerializer
+
+    def get_queryset(self):
+        
+        course_name = self.kwargs['course_name']
+        print('course name in url is -', course_name)
+        match_str = course_name.split(' ')[0]
+        print('match_str made from url is -', match_str)
+        return Course.objects.filter(name__icontains=match_str).exclude(name__iexact=course_name)[:10]
+    
+    
