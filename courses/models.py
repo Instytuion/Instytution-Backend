@@ -62,11 +62,25 @@ class LessonPDF(ModelTrackeBaseClass):
 
 class Lesson(ModelTrackeBaseClass):
     name = models.CharField(max_length=50, unique=True)
-    description = models.CharField(max_length=100)
+    course = models.ForeignKey(
+        'Course', 
+        related_name='Lesson', 
+        on_delete=models.SET_NULL,  
+        null=True,  
+        blank=True
+    )
+    week = models.IntegerField(null=True, blank=True)
     image = models.ManyToManyField(LessonImage, related_name='lessons')
     video = models.ManyToManyField(LessonVideo, related_name='lessons')
     chapter = models.ManyToManyField(LessonPDF, related_name='lessons')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'week'], name='unique_lesson_week')
+        ]
+
+
+    
 class Course(ModelTrackeBaseClass):
     LEVEL_CHOICES = [
         ('beginner', 'Beginner'),
@@ -101,12 +115,17 @@ class Course(ModelTrackeBaseClass):
         return self.name
 
 class Batch(ModelTrackeBaseClass):
+    TIME_CHOICES = [
+        ('morning', 'Morning'),
+        ('afternoon', 'Afternoon'),
+    ]
     name = models.CharField(max_length=100, unique=True)
     course = models.ForeignKey(
         'Course', 
         related_name='batches', 
-        on_delete=models.SET_DEFAULT, 
-        default=NOT_AVAILABLE
+        on_delete=models.SET_NULL,  
+        null=True, 
+        blank=True 
     )
     instructor = models.ForeignKey(
         CustomUser, 
@@ -116,33 +135,41 @@ class Batch(ModelTrackeBaseClass):
     )
     start_date = models.DateField()
     end_date = models.DateField()
+    time_slot = models.CharField(
+        max_length=10,
+        choices=TIME_CHOICES,
+        default='morning'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'name'], name='unique_batch_course')
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.course.name})"
 
 class Session(ModelTrackeBaseClass):
-    TIME_CHOICES = [
-        ('morning', 'Morning'),
-        ('afternoon', 'Afternoon'),
-    ]
 
     batch = models.ForeignKey(
         Batch, 
         related_name='sessions', 
-        on_delete=models.SET_DEFAULT, 
-        default=NOT_AVAILABLE
+        on_delete=models.SET_NULL,  
+        null=True,  
+        blank=True
     )
-    lesson = models.ForeignKey(
-        Lesson, 
-        related_name='sessions', 
-        on_delete=models.SET_DEFAULT, 
-        default=NOT_AVAILABLE
+    date = models.DateTimeField(null=True, blank=True)
+    offline_video = CloudinaryField(
+        'video',
+        resource_type='video',
+        null=True,  
+        blank=True
     )
-    time_of_day = models.CharField(
-        max_length=10,
-        choices=TIME_CHOICES,
-        default='morning'
-    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['batch', 'date'], name='unique_batch_date')
+        ]
     
 class CourseWeekDescription(ModelTrackeBaseClass):
     course = models.ForeignKey(

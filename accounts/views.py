@@ -25,7 +25,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.encoding import force_str , force_bytes
 from django.core.mail import EmailMessage
-from rest_framework import serializers
+
 
 
 

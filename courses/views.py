@@ -1,14 +1,18 @@
 from .serializers import(
     RetrieveProgramsSerializer,
     RetrieveCourseSerializer,
+    BatchSerializer
 )
 from .models import(
     Program,
     Course,
     CourseWeekDescription,
+    Batch
 )
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from django.utils import timezone
+
+
 
 class RetrieveProgramsView(ListAPIView):
     '''
@@ -78,4 +82,14 @@ class RetrieveRelatedCoursesView(ListAPIView):
         print('match_str made from url is -', match_str)
         return Course.objects.filter(name__icontains=match_str).exclude(name__iexact=course_name)[:10]
     
+class RetrieveCourseBatchesView(ListAPIView):
+    serializer_class = BatchSerializer
+
+
+    def get_queryset(self):
+        current_date = timezone.now().date()
+        course_name = self.kwargs['course_name']
+        print('course name in url is -', course_name)
+        return Batch.objects.filter(start_date__gt=current_date,course__name__iexact=course_name)
+
     

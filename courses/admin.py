@@ -37,8 +37,8 @@ class LessonPDFAdmin(admin.ModelAdmin):
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'created_by', 'updated_by', 'created_at', 'updated_at')
-    search_fields = ('name', 'description')
+    list_display = ('name', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    search_fields = ('name', )
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at')
 
 @admin.register(Course)
@@ -49,15 +49,15 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
-    list_display = ('name', 'course', 'instructor', 'start_date', 'end_date', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    list_display = ('name', 'course', 'instructor', 'start_date', 'end_date', 'created_by', 'updated_by', 'created_at', 'updated_at','time_slot')
     search_fields = ('name',)
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'course', 'instructor')
 
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
-    list_display = ('batch', 'lesson', 'time_of_day', 'created_by', 'updated_by', 'created_at', 'updated_at')
-    search_fields = ('batch__name', 'lesson__name')
-    list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'batch', 'lesson', 'time_of_day')
+    list_display = ('batch', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    search_fields = ('batch__name', 'date')
+    list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'batch',  )
 
 
 @admin.register(CourseWeekDescription)
