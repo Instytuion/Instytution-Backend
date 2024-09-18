@@ -78,3 +78,4 @@ class RetrieveRelatedCoursesView(ListAPIView):
         print('match_str made from url is -', match_str)
         return Course.objects.filter(name__icontains=match_str).exclude(name__iexact=course_name)[:10]
     
+    
