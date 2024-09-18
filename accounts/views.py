@@ -25,6 +25,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.encoding import force_str , force_bytes
 from django.core.mail import EmailMessage
+from rest_framework import serializers
 
 
 
@@ -319,55 +320,54 @@ class PasswordResetRequestView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
 
-        try:
-            user = CustomUser.objects.get(email=email)
-            token = default_token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            try:
+                user = CustomUser.objects.get(email=email)
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-            cache_key = f"password_reset_token_{uid}"
+                cache_key = f"password_reset_token_{uid}"
 
-            token_in_cache = cache.get(cache_key)
+                token_in_cache = cache.get(cache_key)
 
-            if token_in_cache:
-                return Response({
-                    "error": f"A password reset link has already been sent. Please check your email."
-                }, status=status.HTTP_400_BAD_REQUEST)
+                if token_in_cache:
+                    return Response({
+                        "error": f"A password reset link has already been sent. Please check your email."
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
-            cache.set(cache_key, token, timeout=60)
+                cache.set(cache_key, token, timeout=60)
 
-            domain = settings.FRONTEND_URL
-            reset_link = f"http://{domain}/reset-password/{uid}/"
-            print(reset_link)
+                domain = settings.FRONTEND_URL
+                reset_link = f"http://{domain}/reset-password/{uid}/"
+                print(reset_link)
 
-            context = {
-                    'username': email.split('@')[0],
-                    'reset_link': reset_link,
-                }
+                context = {
+                        'username': email.split('@')[0],
+                        'reset_link': reset_link,
+                    }
 
-            html_message = render_to_string('password_reset.html', context)
+                html_message = render_to_string('password_reset.html', context)
 
-            email_subject = 'Password Reset Request'
-            email = EmailMessage(
-                subject=email_subject,
-                body=html_message,
-                from_email=settings.EMAIL_HOST_USER,
-                to=[email],
-            )
-            email.content_subtype = "html"  
-            email.send()
+                email_subject = 'Password Reset Request'
+                email = EmailMessage(
+                    subject=email_subject,
+                    body=html_message,
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=[email],
+                )
+                email.content_subtype = "html"  
+                email.send()
 
-            return Response({"message": f"A password reset link has been sent succussfully."}, status=status.HTTP_200_OK)
-        
-        except CustomUser.DoesNotExist:
-            print('error:',str)
-            return Response({"error": "No user is registered with this email."}, status=status.HTTP_404_NOT_FOUND)
-        
-        except Exception as e:
-            print(f"Error in password reset: {str(e)}")
-            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"message": f"A password reset link has been sent succussfully."}, status=status.HTTP_200_OK)
+            
+            except Exception as e:
+                print(f"Error in password reset: {str(e)}")
+                return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            error_messages = serializer.errors.get('email', 'An error occurred')
+            return Response({"error": error_messages}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordResetConfirmView(GenericAPIView):
