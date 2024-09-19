@@ -6,15 +6,17 @@ from cloudinary.models import CloudinaryField
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
-ROLE_CHOICES = (
-    ('admin', 'Admin'),
-    ('user', 'User'),
-    ('instructor', 'Instructor'),
-    ('course_admin', 'Course Admin'),
-    ('shop_admin', 'Shop Admin')
-)
+
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+
+    ROLE_CHOICES = (
+        ('admin', 'Admin'),
+        ('user', 'User'),
+        ('instructor', 'Instructor'),
+        ('course_admin', 'Course Admin'),
+        ('shop_admin', 'Shop Admin')
+    )
     email = models.EmailField(_('email address'), unique=True)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
@@ -31,6 +33,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+    
     
     
     @property
@@ -44,6 +48,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             'access': str(referesh.access_token),
         } 
 
+    @classmethod
+    def get_valid_roles(cls):
+        return [choice[0] for choice in cls.ROLE_CHOICES]
 
     def __str__(self):
         return self.email
