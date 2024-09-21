@@ -25,6 +25,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.encoding import force_str , force_bytes
 from django.core.mail import EmailMessage
+from datetime import timedelta
 
 
 
@@ -76,20 +77,39 @@ class UserOTPVerifyView(APIView):
                 if user:
                     cache.delete(f"otp_{email}")
                 
-                # Generate tokens
-                refresh = RefreshToken.for_user(user)
-                access_token = str(refresh.access_token)
-
-                # Serialize user data
+                tokens = user.tokens    
                 user_serializer = UserSerializer(user)
 
-                return Response({
+                response = Response({
                     "message": "User created successfully.",
                     "user": user_serializer.data,
-                    "refresh": str(refresh),
-                    "access": access_token
                 }, status=status.HTTP_201_CREATED)
+            
+                access_token_expiry = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+                refresh_token_expiry = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
+
+                access_token_cookie_lifetime = access_token_expiry - timedelta(minutes=5)
                 
+                response.set_cookie(
+                    key='access_token',
+                    value=tokens['access'],
+                    httponly=True,  
+                    secure=False,    
+                    samesite='Lax', 
+                    max_age=int(access_token_cookie_lifetime.total_seconds()), 
+                )
+
+                response.set_cookie(
+                    key='refresh_token',
+                    value=tokens['refresh'],
+                    httponly=True,
+                    secure=False,
+                    samesite='Lax',
+                    max_age=int(refresh_token_expiry.total_seconds()),  
+                )
+
+                return response
+            
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
@@ -115,7 +135,6 @@ class SignInUserView(APIView):
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
 
-            # Find the user by email
             user = CustomUser.objects.filter(email=email).first()
 
             if not user:
@@ -127,19 +146,41 @@ class SignInUserView(APIView):
             if not check_password(password, user.password):
                 return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
 
-            # Generate tokens
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-
-            # Serialize user data
+            tokens = user.tokens
             user_serializer = UserSerializer(user)
 
-            return Response({
+            response =  Response({
             "message": "Login successful.",
             "user": user_serializer.data,
-            "refresh": str(refresh),
-            "access": access_token
-            }, status=status.HTTP_200_OK)    
+            }, status=status.HTTP_200_OK)
+
+            access_token_expiry = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+            refresh_token_expiry = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
+
+            access_token_cookie_lifetime = access_token_expiry - timedelta(minutes=5)
+                
+            response.set_cookie(
+                key='access_token',
+                value=tokens['access'],
+                httponly=True,  
+                secure=False,    
+                samesite='Lax', 
+                max_age=int(access_token_cookie_lifetime.total_seconds()), 
+            )
+
+            response.set_cookie(
+                key='refresh_token',
+                value=tokens['refresh'],
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                max_age=int(refresh_token_expiry.total_seconds()),  
+            )
+
+            print("Access Token set in cookie: ", response.cookies.get('access_token'))
+            print("Refresh Token set in cookie: ", response.cookies.get('refresh_token'))
+
+            return response   
                   
         except Exception as e:
             print('error:', e)
@@ -256,13 +297,42 @@ class GoogleOauthSignInview(GenericAPIView):
     def post(self, request):
         """
         Handle Google OAuth sign-in.
-        Returns Response object containing the access token.
+        Returns Response object containing the user information.
         """
         print(request.data)
         serializer=self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data=((serializer.validated_data)['access_token'])
-        return Response(data, status=status.HTTP_200_OK) 
+        response = Response({
+            "message": data['message'],  
+            "user": data['user'],  
+        }, status=status.HTTP_200_OK)
+
+        access_token_expiry = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+        refresh_token_expiry = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
+
+        access_token_cookie_lifetime = access_token_expiry - timedelta(minutes=5)
+
+        response.set_cookie(
+            key='access_token',
+            value=data['access'],  
+            httponly=True,
+            secure=False,  
+            samesite='Lax',
+            max_age=int(access_token_cookie_lifetime.total_seconds()),
+        )
+
+        response.set_cookie(
+            key='refresh_token',
+            value=data['refresh'], 
+            httponly=True,
+            secure=False, 
+            samesite='Lax',
+            max_age=int(refresh_token_expiry.total_seconds()),
+        )
+
+        return response
+         
 
 class UserProfileRetrieveUpdateView(RetrieveUpdateAPIView):
     
