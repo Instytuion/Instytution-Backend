@@ -11,8 +11,9 @@ urlpatterns = [
     path('instructor-create/', InstructorCreateView.as_view(), name='instructor_create'),
     path('google-auth/', GoogleOauthSignInview.as_view(), name='google_auth'),
     path('user-profile/', UserProfileRetrieveUpdateView.as_view(), name='user-profile'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('user-profile/verify-update/', UserProfileVerifyUpdateView.as_view(), name='user-profile-verify-update'),
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('reset/<uidb64>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('logout/', LogoutView.as_view(), name='logout'),
 ]
