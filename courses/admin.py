@@ -8,7 +8,8 @@ from .models import (
     Course, 
     Batch, 
     Session,
-    CourseWeekDescription
+    CourseWeekDescription,
+    BatchStudents
     )
 
 @admin.register(Program)
@@ -65,3 +66,9 @@ class CourseWeekDescriptionAdmin(admin.ModelAdmin):
     list_display = ('course', 'week', 'created_by', 'updated_by', 'created_at', 'updated_at')
     search_fields = ('course', 'week',)
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'course', 'week')
+
+@admin.register(BatchStudents)
+class BatchStudentsAdmin(admin.ModelAdmin):
+    list_display = ('batch', 'student', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    search_fields = ('batch', 'student',)
+    list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'batch', 'student')

@@ -183,3 +183,16 @@ class CourseWeekDescription(ModelTrackeBaseClass):
         constraints = [
             models.UniqueConstraint(fields=['course', 'week'], name='unique_course_week')
         ]
+
+class BatchStudents(ModelTrackeBaseClass):
+    batch = models.ForeignKey(
+        'Batch', 
+        related_name='batch_students', 
+        on_delete=models.CASCADE
+    )
+    student = models.ForeignKey(
+        CustomUser, 
+        related_name='enrolled_batches', 
+        on_delete=models.SET_DEFAULT, 
+        default=NOT_AVAILABLE
+    )

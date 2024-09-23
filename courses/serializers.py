@@ -29,16 +29,20 @@ class RetrieveCourseSerializer(serializers.ModelSerializer):
 class BatchSerializer(serializers.ModelSerializer):
     course_name=serializers.CharField(source='course.name', read_only=True)
     instructor_name=serializers.SerializerMethodField()
+    student_count = serializers.SerializerMethodField()
 
 
     class Meta:
         model = Batch
 
-        fields = ['id', 'name', 'course_name', 'instructor_name', 'start_date', 'end_date', 'time_slot']
+        fields = ['id', 'name', 'course_name', 'instructor_name', 'start_date', 'end_date', 'time_slot', 'student_count']
 
     def get_instructor_name(self, obj):
         first_name = obj.instructor.first_name
         last_name = obj.instructor.last_name
 
         return f"{first_name} {last_name}"
+    
+    def get_student_count(self, obj):
+        return obj.batch_students.count()
         
