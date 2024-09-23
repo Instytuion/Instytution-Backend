@@ -25,9 +25,23 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.encoding import force_str , force_bytes
 from django.core.mail import EmailMessage
-from datetime import timedelta
+from rest_framework_simplejwt.views import TokenRefreshView
 
 
+class CustomTokenRefreshView(TokenRefreshView):
+    """
+    Custom TokenRefreshView that checks for refresh_token in cookies.
+    """
+    def post(self, request, *args, **kwargs):
+
+        refresh_token = request.COOKIES.get('refresh')
+
+        if not refresh_token:
+            return Response({"detail": "Refresh token not provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.data['refresh'] = refresh_token
+
+        return super().post(request, *args, **kwargs)
 
 
 class UserSignUpView(APIView):
@@ -83,24 +97,13 @@ class UserOTPVerifyView(APIView):
                 response = Response({
                     "message": "User created successfully.",
                     "user": user_serializer.data,
+                    "access":tokens['access']
                 }, status=status.HTTP_201_CREATED)
-            
-                access_token_expiry = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+                
                 refresh_token_expiry = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
 
-                access_token_cookie_lifetime = access_token_expiry - timedelta(minutes=5)
-                
                 response.set_cookie(
-                    key='access_token',
-                    value=tokens['access'],
-                    httponly=True,  
-                    secure=False,    
-                    samesite='Lax', 
-                    max_age=int(access_token_cookie_lifetime.total_seconds()), 
-                )
-
-                response.set_cookie(
-                    key='refresh_token',
+                    key='refresh',
                     value=tokens['refresh'],
                     httponly=True,
                     secure=False,
@@ -152,24 +155,13 @@ class SignInUserView(APIView):
             response =  Response({
             "message": "Login successful.",
             "user": user_serializer.data,
+            "access":tokens['access']
             }, status=status.HTTP_200_OK)
 
-            access_token_expiry = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
             refresh_token_expiry = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
 
-            access_token_cookie_lifetime = access_token_expiry - timedelta(minutes=5)
-                
             response.set_cookie(
-                key='access_token',
-                value=tokens['access'],
-                httponly=True,  
-                secure=False,    
-                samesite='Lax', 
-                max_age=int(access_token_cookie_lifetime.total_seconds()), 
-            )
-
-            response.set_cookie(
-                key='refresh_token',
+                key='refresh',
                 value=tokens['refresh'],
                 httponly=True,
                 secure=False,
@@ -177,7 +169,6 @@ class SignInUserView(APIView):
                 max_age=int(refresh_token_expiry.total_seconds()),  
             )
 
-            print("Access Token set in cookie: ", response.cookies.get('access_token'))
             print("Refresh Token set in cookie: ", response.cookies.get('refresh_token'))
 
             return response   
@@ -189,6 +180,15 @@ class SignInUserView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+class LogoutView(APIView):
+    """
+    API View for logging out the user by deleting the refresh token cookie.
+    """
+    def post(self, request):
+        # Clear the refresh_token cookie
+        response = Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
+        response.delete_cookie('refresh')  # Adjust the cookie name if needed
+        return response
 
 class ResentOTPView(APIView):
     
@@ -305,25 +305,14 @@ class GoogleOauthSignInview(GenericAPIView):
         data=((serializer.validated_data)['access_token'])
         response = Response({
             "message": data['message'],  
-            "user": data['user'],  
+            "user": data['user'],
+            "access":data['access']  
         }, status=status.HTTP_200_OK)
 
-        access_token_expiry = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
         refresh_token_expiry = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
 
-        access_token_cookie_lifetime = access_token_expiry - timedelta(minutes=5)
-
         response.set_cookie(
-            key='access_token',
-            value=data['access'],  
-            httponly=True,
-            secure=False,  
-            samesite='Lax',
-            max_age=int(access_token_cookie_lifetime.total_seconds()),
-        )
-
-        response.set_cookie(
-            key='refresh_token',
+            key='refresh',
             value=data['refresh'], 
             httponly=True,
             secure=False, 
