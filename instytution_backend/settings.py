@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'accounts',
     'courses',
     'custom_admin',
+    'payments',
     #third party
     'rest_framework',
     'cloudinary',
@@ -212,3 +213,7 @@ CACHES = {
         }
     }
 }
+
+#Razorpay
+RAZORPAY_KEY_ID=config("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET=config("RAZORPAY_KEY_SECRET")
