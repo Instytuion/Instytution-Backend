@@ -11,7 +11,7 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer
 )
-from utils.utils import generate_otp , send_otp_email
+from utils.utils import generate_otp , send_otp_email , send_credentials_email
 from .models import CustomUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
@@ -26,6 +26,7 @@ from django.conf import settings
 from django.utils.encoding import force_str , force_bytes
 from django.core.mail import EmailMessage
 from rest_framework_simplejwt.views import TokenRefreshView
+
 
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -244,6 +245,8 @@ class CustomreAbstractCrateView(APIView):
             if serializer.is_valid():
                 email = serializer.validated_data.pop('email')
                 password = serializer.validated_data.pop('password')
+                role = serializer.validated_data['role']
+                first_name = serializer.validated_data['first_name']
 
                 extra_feilds = serializer.validated_data
                 register_mode = 'email'
@@ -254,8 +257,9 @@ class CustomreAbstractCrateView(APIView):
                     register_mode=register_mode,
                     **extra_feilds
                 )
-                
 
+                send_credentials_email(email, password, role, first_name)
+                
                 user_serializer = UserSerializer(user)
 
                 return Response({
