@@ -69,6 +69,6 @@ class CourseWeekDescriptionAdmin(admin.ModelAdmin):
 
 @admin.register(BatchStudents)
 class BatchStudentsAdmin(admin.ModelAdmin):
-    list_display = ('batch', 'student', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    list_display = ('batch', 'student')
     search_fields = ('batch', 'student',)
-    list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'batch', 'student')
+    list_filter = ('batch', 'student')

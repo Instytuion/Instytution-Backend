@@ -12,14 +12,12 @@ class ModelTrackeBaseClass(models.Model):
     created_by = models.ForeignKey(
         CustomUser,
         related_name='%(class)s_created',
-        on_delete=models.SET_DEFAULT,
-        default=NOT_AVAILABLE
+        on_delete=models.CASCADE
     )
     updated_by = models.ForeignKey( 
         CustomUser,
         related_name='%(class)s_updated',
-        on_delete=models.SET_DEFAULT,
-        default=NOT_AVAILABLE
+        on_delete=models.CASCADE
     )
 
     class Meta:
@@ -92,8 +90,7 @@ class Course(ModelTrackeBaseClass):
     program = models.ForeignKey(
         Program, 
         related_name='course_programs', 
-        on_delete=models.SET_DEFAULT, 
-        default=NOT_AVAILABLE
+        on_delete=models.CASCADE
     )
     duration = models.IntegerField()
     image = CloudinaryField('image')
@@ -130,8 +127,7 @@ class Batch(ModelTrackeBaseClass):
     instructor = models.ForeignKey(
         CustomUser, 
         related_name='instructed_batches', 
-        on_delete=models.SET_DEFAULT, 
-        default=NOT_AVAILABLE
+        on_delete=models.Case
     )
     start_date = models.DateField()
     end_date = models.DateField()
@@ -184,7 +180,7 @@ class CourseWeekDescription(ModelTrackeBaseClass):
             models.UniqueConstraint(fields=['course', 'week'], name='unique_course_week')
         ]
 
-class BatchStudents(ModelTrackeBaseClass):
+class BatchStudents(models.Model):
     batch = models.ForeignKey(
         'Batch', 
         related_name='batch_students', 
@@ -193,6 +189,6 @@ class BatchStudents(ModelTrackeBaseClass):
     student = models.ForeignKey(
         CustomUser, 
         related_name='enrolled_batches', 
-        on_delete=models.SET_DEFAULT, 
-        default=NOT_AVAILABLE
+        on_delete=models.CASCADE
     )
+    created_at = models.DateTimeField(auto_now_add=True)
