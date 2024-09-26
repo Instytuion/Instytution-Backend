@@ -4,6 +4,7 @@ from .models import CoursePayment
 class CreateRazorpayOrderSerializer(serializers.Serializer):
     amount = serializers.IntegerField()
     currency = serializers.CharField()
+    batch_id = serializers.IntegerField()
 
 class CoursePaymentSerializer(serializers.ModelSerializer):
     class Meta:
