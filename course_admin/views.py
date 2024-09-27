@@ -5,16 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import CourseSerializer
 from accounts.permissions import IsCourseAdmin
 from courses.models import Course
+from urllib.parse import unquote
 
 class CourseCreateView(APIView):
     """ api for create new course and return its data """
     permission_classes = [IsAuthenticated, IsCourseAdmin]
 
     def get(self, request, *args, **kwargs):
-        course_id = kwargs.get('pk', None)
-        if course_id: 
+        course_name = unquote(kwargs.get('course_name', None))  
+        if course_name: 
             try:
-                course = Course.objects.get(pk=course_id)
+                course = Course.objects.get(name=course_name)
                 serializer = CourseSerializer(course)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Course.DoesNotExist:
