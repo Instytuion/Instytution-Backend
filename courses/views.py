@@ -1,7 +1,8 @@
 from .serializers import(
     RetrieveProgramsSerializer,
     RetrieveCourseSerializer,
-    BatchSerializer
+    BatchSerializer,
+    ProgramSerializer
 )
 from .models import(
     Program,
@@ -11,15 +12,8 @@ from .models import(
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django.utils import timezone
-
-
-
-class RetrieveProgramsView(ListAPIView):
-    '''
-    to fetch all programs.
-    '''
-    queryset = Program.objects.all()
-    serializer_class = RetrieveProgramsSerializer
+from rest_framework import generics
+from accounts.permissions import IsCourseAdmin
 
 class RetrieveLatestCourseView(ListAPIView):
     '''
@@ -93,3 +87,17 @@ class RetrieveCourseBatchesView(ListAPIView):
         return Batch.objects.filter(start_date__gt=current_date,course__name__iexact=course_name)
 
     
+class ProgramListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Program.objects.all()
+    serializer_class = ProgramSerializer
+    permission_classes=[IsCourseAdmin]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
+
+class ProgramRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Program.objects.all()
+    serializer_class = ProgramSerializer
