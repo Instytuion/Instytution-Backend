@@ -35,8 +35,9 @@ class Program(ModelTrackeBaseClass):
         return self.name
 
 class LessonImage(ModelTrackeBaseClass):
-    image = CloudinaryField('image', blank=True, null=True)
     name = models.CharField(max_length=50, unique=True)
+    image = CloudinaryField('image', blank=True, null=True)
+
 
     class Meta:
         verbose_name = 'Lesson Image'
@@ -68,9 +69,9 @@ class Lesson(ModelTrackeBaseClass):
         blank=True
     )
     week = models.IntegerField(null=True, blank=True)
-    image = models.ManyToManyField(LessonImage, related_name='lessons')
-    video = models.ManyToManyField(LessonVideo, related_name='lessons')
-    chapter = models.ManyToManyField(LessonPDF, related_name='lessons')
+    image = models.ManyToManyField(LessonImage, related_name='lesson_image')
+    video = models.ManyToManyField(LessonVideo, related_name='lesson_video')
+    lesson_pdf = models.ManyToManyField(LessonPDF, related_name='lesson_pdf')
 
     class Meta:
         constraints = [
