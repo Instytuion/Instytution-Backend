@@ -6,8 +6,8 @@ class RazorpayClient:
 
     def create_order(self, amount, currency):
         data = {
-            "amount": 100,
-            "currency": "INR",
+            "amount": amount*100,
+            "currency": currency,
         }
 
         try:

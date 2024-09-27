@@ -8,4 +8,6 @@ urlpatterns = [
     path('course_detail/<str:name>/', RetrieveCourseDetailView.as_view(), name='course_details'),
     path('related_courses/<str:course_name>/', RetrieveRelatedCoursesView.as_view(), name='related_courses'),
     path('course_batches/<str:course_name>/', RetrieveCourseBatchesView.as_view(), name='Course_batches'),
+    path('add/programs/', ProgramCreateAPIView.as_view(), name='program-list-create'),
+    path('update/programs/<int:pk>/', ProgramRetrieveUpdateDestroyAPIView.as_view(), name='program-retrieve-update-destroy'),
 ]

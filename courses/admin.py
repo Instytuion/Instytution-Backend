@@ -50,7 +50,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
-    list_display = ('name', 'course', 'instructor', 'start_date', 'end_date', 'created_by', 'updated_by', 'created_at', 'updated_at','time_slot')
+    list_display = ('name', 'course', 'instructor', 'time_slot', 'start_date', 'end_date', 'created_by', 'updated_by', 'created_at', 'updated_at')
     search_fields = ('name',)
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'course', 'instructor')
 
@@ -69,6 +69,6 @@ class CourseWeekDescriptionAdmin(admin.ModelAdmin):
 
 @admin.register(BatchStudents)
 class BatchStudentsAdmin(admin.ModelAdmin):
-    list_display = ('batch', 'student', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    list_display = ('batch', 'student')
     search_fields = ('batch', 'student',)
-    list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'batch', 'student')
+    list_filter = ('batch', 'student')
