@@ -14,8 +14,6 @@ class CourseSerializer(serializers.ModelSerializer):
 
         program_name = validated_data.pop('program')['name']
 
-        print('program_name', program_name)
-
         try:            
             program = Program.objects.get(name=program_name)
         except Program.DoesNotExist:
@@ -24,3 +22,14 @@ class CourseSerializer(serializers.ModelSerializer):
         course = Course.objects.create(program=program, **validated_data)
             
         return course
+    
+    def update(self, instance, validated_data):
+    
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value) 
+        
+        print("Updating instance with:", {attr: getattr(instance, attr) for attr in validated_data})
+
+        instance.updated_by = self.context['request'].user    
+        instance.save()
+        return instance
