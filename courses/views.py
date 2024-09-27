@@ -15,7 +15,6 @@ from django.utils import timezone
 from rest_framework import generics
 from accounts.permissions import IsCourseAdmin
 
-
 class RetrieveLatestCourseView(ListAPIView):
     '''
     to fetch course data of latest 4 courses.
@@ -91,7 +90,7 @@ class RetrieveCourseBatchesView(ListAPIView):
 class ProgramListCreateAPIView(generics.ListCreateAPIView):
     queryset = Program.objects.all()
     serializer_class = ProgramSerializer
-    # permission_classes=[IsCourseAdmin]
+    permission_classes=[IsCourseAdmin]
 
     def perform_create(self, serializer):
         serializer.save(
