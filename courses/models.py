@@ -97,11 +97,6 @@ class Course(ModelTrackeBaseClass):
     description = models.TextField() 
     skill = models.CharField(max_length=250)
     prerequisite = models.CharField(max_length=250)
-    lesson = models.ManyToManyField(
-        Lesson, 
-        related_name='course_lessons',
-        blank=True
-    )
     course_level = models.CharField(
         max_length=12, 
         choices=LEVEL_CHOICES, 
