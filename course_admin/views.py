@@ -31,8 +31,4 @@ class CourseCreateView(APIView):
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
-
-class CreateLessonView:
-    pass
