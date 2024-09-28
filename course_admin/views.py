@@ -7,6 +7,8 @@ from courses.models import Course
 from urllib.parse import unquote
 from rest_framework.serializers import ValidationError
 from django.shortcuts import get_object_or_404
+from courses.models import Program
+from .serializers import *
 
 class CourseCreateView(APIView):
     """ api for create new course and return its data """
@@ -54,3 +56,18 @@ class CourseUpdateView(generics.UpdateAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class ProgramCreateAPIView(generics.CreateAPIView):
+    queryset = Program.objects.all()
+    serializer_class = ProgramSerializer
+    permission_classes = [IsCourseAdmin]
+
+    def perform_create(self, serializer):
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
+
+class ProgramRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Program.objects.all()
+    serializer_class = ProgramSerializer
+    lookup_field = 'name'   
