@@ -1,12 +1,8 @@
 from rest_framework import status ,generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
-<<<<<<< HEAD
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CourseSerializer, LessonSerializer
-=======
-from .serializers import CourseSerializer
->>>>>>> dev
 from accounts.permissions import IsCourseAdmin
 from courses.models import Course
 from urllib.parse import unquote
