@@ -131,11 +131,11 @@ class LessonDeleteView(generics.DestroyAPIView):
     """To delete a lesson instanse"""
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCourseAdmin]
 
 class LessonUpdateView(APIView):
     """To update a lesson instance along with its related media."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCourseAdmin]
 
     @transaction.atomic
     def patch(self, request, pk, *args, **kwargs):
@@ -158,3 +158,21 @@ class LessonUpdateView(APIView):
             return Response(data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class LessonImageDeleteView(generics.DestroyAPIView):
+    """To delete a lesson image"""
+    queryset = LessonImage.objects.all()
+    serializer_class = LessonImageSerializer
+    permission_classes = [IsCourseAdmin]
+
+class LessonVideoDeleteView(generics.DestroyAPIView):
+    """To delete a lesson video"""
+    queryset = LessonVideo.objects.all()
+    serializer_class = LessonVideoSerializer
+    permission_classes = [IsCourseAdmin]
+
+class LessonPdfDeleteView(generics.DestroyAPIView):
+    """To delete a lesson pdf"""
+    queryset = LessonPDF.objects.all()
+    serializer_class = LessonPDFSerializer
+    permission_classes = [IsCourseAdmin]
