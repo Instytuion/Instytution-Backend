@@ -7,5 +7,8 @@ urlpatterns = [
     path('add_lessons/<str:course_name>/', AddCourseLessonView.as_view(), name='add_course_lesson'),  
     path('courses/update/<str:course_name>/', CourseUpdateView.as_view(), name='course-update'),
     path('programs/', ProgramCreateAPIView.as_view(), name='program-list-create'),
-    path('programs/<str:name>/', ProgramRetrieveUpdateDestroyAPIView.as_view(), name='program-retrieve-update-destroy'),
+    path('program/<str:name>/', ProgramRetrieveUpdateDestroyAPIView.as_view(), name='program-retrieve-update-destroy'),
+    path('lessons/<str:course_name>/', ListCourseLessonsView.as_view(), name='list-course-lessons'),
+    path('delete_lesson/<int:pk>/', LessonDeleteView.as_view(), name='delete_lesson'),
+    path('update_lesson/<int:pk>/', LessonUpdateView.as_view(), name='update_lesson'),
 ]

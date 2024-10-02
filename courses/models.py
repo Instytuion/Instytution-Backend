@@ -34,8 +34,25 @@ class Program(ModelTrackeBaseClass):
     def __str__(self):
         return self.name
 
+class Lesson(ModelTrackeBaseClass):
+    name = models.CharField(max_length=50)
+    course = models.ForeignKey(
+        'Course', 
+        related_name='Lessons', 
+        on_delete=models.SET_NULL,  
+        null=True,  
+        blank=True
+    )
+    week = models.IntegerField(null=True, blank=True)
+    description = models.TextField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'week'], name='unique_lesson_week')
+        ]
+
 class LessonImage(ModelTrackeBaseClass):
-    name = models.CharField(max_length=50, unique=True)
+    lesson = models.ForeignKey(Lesson, related_name='images', on_delete=models.CASCADE)
     image = CloudinaryField('image', blank=True, null=True)
 
 
@@ -44,7 +61,7 @@ class LessonImage(ModelTrackeBaseClass):
         verbose_name_plural = 'Lesson Images'
 
 class LessonVideo(ModelTrackeBaseClass):
-    name = models.CharField(max_length=50, unique=True)
+    lesson = models.ForeignKey(Lesson, related_name='videos', on_delete=models.CASCADE)
     video = CloudinaryField('video', blank=True, null=True)
 
     class Meta:
@@ -52,35 +69,13 @@ class LessonVideo(ModelTrackeBaseClass):
         verbose_name_plural = 'Lesson Videos'
 
 class LessonPDF(ModelTrackeBaseClass):
-    name = models.CharField(max_length=50, unique=True)
+    lesson = models.ForeignKey(Lesson, related_name='pdfs', on_delete=models.CASCADE)
     pdf = CloudinaryField('pdf', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Lesson PDF'
         verbose_name_plural = 'Lesson PDFs'
-
-class Lesson(ModelTrackeBaseClass):
-    name = models.CharField(max_length=50)
-    course = models.ForeignKey(
-        'Course', 
-        related_name='Lesson', 
-        on_delete=models.SET_NULL,  
-        null=True,  
-        blank=True
-    )
-    week = models.IntegerField(null=True, blank=True)
-    description = models.TextField()
-    images = models.ManyToManyField(LessonImage, related_name='lesson_image')
-    videos = models.ManyToManyField(LessonVideo, related_name='lesson_video')
-    lesson_pdfs = models.ManyToManyField(LessonPDF, related_name='lesson_pdf')
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['course', 'week'], name='unique_lesson_week')
-        ]
-
-
-    
+  
 class Course(ModelTrackeBaseClass):
     LEVEL_CHOICES = [
         ('beginner', 'Beginner'),
