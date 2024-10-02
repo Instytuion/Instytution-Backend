@@ -72,8 +72,6 @@ class AddCourseLessonView(APIView):
                 return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     
-    
-
 class CourseUpdateView(generics.UpdateAPIView):
     """ API for updating an existing course """
     permission_classes = [IsCourseAdmin]
