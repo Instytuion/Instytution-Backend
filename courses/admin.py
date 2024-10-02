@@ -20,20 +20,20 @@ class ProgramAdmin(admin.ModelAdmin):
 
 @admin.register(LessonImage)
 class LessonImageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_by', 'updated_by', 'created_at', 'updated_at')
-    search_fields = ('name',)
+    list_display = ('id','lesson', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    search_fields = ('id',)
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at')
 
 @admin.register(LessonVideo)
 class LessonVideoAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_by', 'updated_by', 'created_at', 'updated_at')
-    search_fields = ('name',)
+    list_display = ('id','lesson', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    search_fields = ('id',)
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at')
 
 @admin.register(LessonPDF)
 class LessonPDFAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_by', 'updated_by', 'created_at', 'updated_at')
-    search_fields = ('name',)
+    list_display = ('id','lesson', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    search_fields = ('id',)
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at')
 
 @admin.register(Lesson)

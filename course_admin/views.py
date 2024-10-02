@@ -1,8 +1,9 @@
 from rest_framework import status ,generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import CourseSerializer, LessonSerializer
+from rest_framework.exceptions import NotFound
 from accounts.permissions import IsCourseAdmin
 from courses.models import Course
 from urllib.parse import unquote
@@ -10,6 +11,8 @@ from rest_framework.serializers import ValidationError
 from django.shortcuts import get_object_or_404
 from courses.models import Program
 from .serializers import *
+from django.db import transaction
+from .utils import restructure_lessons_data, restructure_update_lesson_data
 
 class CourseCreateView(APIView):
     """ api for create new course and return its data """
@@ -38,10 +41,11 @@ class CourseCreateView(APIView):
 
 class AddCourseLessonView(APIView):
     """To add or update Lesson instance of a particular Course"""
-    permission_classes = [IsAuthenticated, IsCourseAdmin]
+    permission_classes = [IsCourseAdmin]
 
+    @transaction.atomic
     def post(self, request, course_name, *args, **kwargs):
-        lessons_data = self.restructure_lessons_data(request.data)
+        lessons_data = restructure_lessons_data(request.data)
         course = Course.objects.get(name__iexact=course_name)
 
         for lesson_data in lessons_data:
@@ -57,49 +61,17 @@ class AddCourseLessonView(APIView):
             if serializer.is_valid():
                 try:
                     serializer.save()
+                    return Response({"status": "lessons created"}, status=status.HTTP_201_CREATED)
                 except Exception as e:
                     print('Error while creating Lesson instance - ', str(e))
                     print('Errors serializer:', serializer.errors)
+                    return Response({"message":str(e)}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 print('LessonSerializer data not valid error inside AddCourseLessonView')
                 print('Errors:', serializer.errors)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"status": "lessons created"}, status=status.HTTP_201_CREATED)
     
-    def restructure_lessons_data(self, data):
-        """Reorganize QueryDict data into a structured lessons list to pass to LessonSerializer"""
-        lessons = {}
-        
-        for key, value in data.lists():
-            if key.startswith('lessons'):
-                lesson_index = int(key.split('[')[1].split(']')[0])
-                
-                if lesson_index not in lessons:
-                    lessons[lesson_index] = {
-                        'lessonName': '',
-                        'lessonDescription': '',
-                        'week': 0,
-                        'images': [],
-                        'pdfs': [],
-                        'videos': [],
-                    }
-
-                if 'pdfs' in key:
-                    lessons[lesson_index]['pdfs'].append({'pdf': value[0]})
-                elif 'images' in key:
-                    lessons[lesson_index]['images'].append({'image': value[0]})
-                elif 'videos' in key:
-                    lessons[lesson_index]['videos'].append({'video': value[0]})
-                else:
-                    field_name = key.split(']')[1].lstrip('[').rstrip(']')
-                    if field_name == 'week':
-                        lessons[lesson_index][field_name] = int(value[0])
-                    lessons[lesson_index][field_name] = value[0]
-
-        lessons_list = [lesson_data for lesson_data in lessons.values()]
-        return lessons_list
-
 class CourseUpdateView(generics.UpdateAPIView):
     """ API for updating an existing course """
     permission_classes = [IsCourseAdmin]
@@ -135,3 +107,54 @@ class ProgramRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     queryset = Program.objects.all()
     serializer_class = ProgramSerializer
     lookup_field = 'name'   
+
+class ListCourseLessonsView(ListAPIView):
+    """Fetch all lessons with media for a specific course"""
+    serializer_class = LessonSerializer
+    permission_classes = [IsCourseAdmin]
+
+    def get_queryset(self):
+        course_name = self.kwargs.get('course_name')
+        course = get_object_or_404(Course, name__iexact=course_name)
+        return Lesson.objects.filter(course=course)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response({
+            'status': 'success',
+            'message': 'Lessons retrieved successfully.',
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+    
+class LessonDeleteView(generics.DestroyAPIView):
+    """To delete a lesson instanse"""
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
+
+class LessonUpdateView(APIView):
+    """To update a lesson instance along with its related media."""
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def patch(self, request, pk, *args, **kwargs):
+        try:
+            lesson = Lesson.objects.get(pk=pk)
+        except Lesson.DoesNotExist:
+            raise NotFound(detail="Lesson not found.")
+        lessons_data = restructure_update_lesson_data(request.data)
+
+        serializer = LessonSerializer(lesson, data=lessons_data, context={'request': request}, partial=True)
+        if serializer.is_valid():
+            print('inside valid serializer for lesson update')
+            updated_lesson = serializer.save()
+
+            updated_serializer = LessonSerializer(updated_lesson)
+            data = {
+                "status": "lesson updated",
+                "data": updated_serializer.data 
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
