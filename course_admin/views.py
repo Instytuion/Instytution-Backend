@@ -176,3 +176,17 @@ class LessonPdfDeleteView(generics.DestroyAPIView):
     queryset = LessonPDF.objects.all()
     serializer_class = LessonPDFSerializer
     permission_classes = [IsCourseAdmin]
+
+class LessonImageCreateView(generics.CreateAPIView):
+    """To create an instance of a lesson image"""
+    queryset = LessonImage.objects.all()
+    serializer_class = LessonImageSerializer
+    permission_classes = [IsCourseAdmin]
+
+    def perform_create(self, serializer):
+        lesson = Lesson.objects.get(id=self.request.data.get('lesson'))
+        serializer.save(
+            lesson=lesson,
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
