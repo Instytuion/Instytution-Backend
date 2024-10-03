@@ -5,25 +5,41 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from accounts.serializers import UserSerializer
-from accounts.permissions import IsAdminAndAuthenticated
+from accounts.permissions import IsAdminAndAuthenticated,IsCourseAdmin
 from .pagination import StandardResultsSetPagination
 from rest_framework import filters
 from rest_framework.exceptions import ValidationError
 
-class BlockUnblockUserView(APIView):
-    """API endpoint to block or unblock a user."""
-
+class BlockUnblockUserViewBaseClass(APIView):
+    """Base class for blocking or unblocking users."""
+    permission_classes = []
     def patch(self, request, user_id):
+        self.validate(request, user_id)  
         user = get_object_or_404(CustomUser, id=user_id)
         user.is_active = not user.is_active
         user.save(update_fields=['is_active'])
         return Response({"status": "success", "is_active": user.is_active}, status=status.HTTP_200_OK)
+    
 
-class UserListByRoleView(ListAPIView):
+class BlockUnblockUserView(BlockUnblockUserViewBaseClass):
+    """API endpoint to block or unblock a user.(without instructore)"""
+    permission_classes = [IsAdminAndAuthenticated]
+
+class InstructoreBlockUnblock(BlockUnblockUserViewBaseClass):
+    """API endpoint to block or unblock an instructor"""
+    permission_classes = [IsCourseAdmin]
+
+    def validate(self, request, user_id):
+        user = get_object_or_404(CustomUser.objects.only('id', 'role'), id=user_id)
+        if user.role != 'instructor':
+            raise ValidationError({'error': 'Only instructors can be blocked or unblocked.'})
+
+
+class UserListByRoleViewBaseClass(ListAPIView):
     """To list users by their roles with search and pagination support."""
 
     serializer_class = UserSerializer
-    permission_classes = [IsAdminAndAuthenticated]
+    permission_classes = []
     pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter]
     search_fields = ['email', 'first_name', 'last_name']
@@ -37,3 +53,11 @@ class UserListByRoleView(ListAPIView):
 
         return CustomUser.objects.filter(role=role)
 
+
+
+class UserListByRoleView(UserListByRoleViewBaseClass):
+    """To list users by their roles with search and pagination support. (without Instructore)"""
+    permission_classes = [IsAdminAndAuthenticated]
+
+class InstructorsLIstView(UserListByRoleViewBaseClass):
+    permission_classes = [IsCourseAdmin]
