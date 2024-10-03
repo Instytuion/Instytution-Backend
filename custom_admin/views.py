@@ -45,6 +45,7 @@ class UserListByRoleViewBaseClass(ListAPIView):
     search_fields = ['email', 'first_name', 'last_name']
 
     def get_queryset(self):
+        self.validate()
         role = self.kwargs['role']
 
         valid_roles = CustomUser.get_valid_roles()
@@ -61,3 +62,7 @@ class UserListByRoleView(UserListByRoleViewBaseClass):
 
 class InstructorsLIstView(UserListByRoleViewBaseClass):
     permission_classes = [IsCourseAdmin]
+    def validate(self):
+        role = self.kwargs['role']
+        if role != 'instructor':
+            raise ValidationError({'error': 'You DO not have permission to interact with this user'})
