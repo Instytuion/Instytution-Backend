@@ -15,4 +15,5 @@ urlpatterns = [
     path('delete_lesson_video/<int:pk>/', LessonVideoDeleteView.as_view(), name='delete_lesson_video'),
     path('delete_lesson_pdf/<int:pk>/', LessonPdfDeleteView.as_view(), name='delete_lesson_pdf'),
     path('add_lesson_image/', LessonImageCreateView.as_view(), name='add_lesson_image'),
+    path('add_lesson_pdf/', LessonPdfCreateView.as_view(), name='add_lesson_pdf'),
 ]

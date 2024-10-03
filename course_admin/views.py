@@ -190,3 +190,17 @@ class LessonImageCreateView(generics.CreateAPIView):
             created_by=self.request.user,
             updated_by=self.request.user
         )
+
+class LessonPdfCreateView(generics.CreateAPIView):
+    """To create an instance of a lesson pdf"""
+    queryset = LessonPDF.objects.all()
+    serializer_class = LessonPDFSerializer
+    permission_classes = [IsCourseAdmin]
+
+    def perform_create(self, serializer):
+        lesson = Lesson.objects.get(id=self.request.data.get('lesson'))
+        serializer.save(
+            lesson=lesson,
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
