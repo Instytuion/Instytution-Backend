@@ -29,19 +29,36 @@ class CreateRazorpayOrderView(APIView):
             user = request.user
             requested_batch = Batch.objects.get(id=batch_id)
             requested_start_date = requested_batch.start_date
+            requested_end_date = requested_batch.end_date
+            requested_start_time = requested_batch.start_time
+            requested_end_time = requested_batch.end_time
             users_batch_students_instance = BatchStudents.objects.filter(student=user)
             users_batch_date_list = [
-                (batch.batch.start_date, batch.batch.end_date, batch.batch.name) for batch in users_batch_students_instance
+                (batch.batch.start_date, 
+                 batch.batch.end_date,
+                 batch.batch.start_time,
+                 batch.batch.end_time,
+                 batch.batch.name) 
+                for batch in users_batch_students_instance
                 ]
             for item in users_batch_date_list:
-                if item[0] <= requested_start_date <= item[1]:
-                    enrolled_already = True
-                    batch_name = item[2]
-                    break
+                if (
+                    (item[0] <= requested_start_date <= item[1]) or 
+                    (item[0] <= requested_end_date <= item[1]) or 
+                    (requested_start_date < item[0] and requested_end_date > item[1])
+                    ):
+                    if (
+                        (item[2] <= requested_start_time <= item[3]) or 
+                        (item[2] <= requested_end_time <= item[3]) or 
+                        (requested_start_time < item[2] and requested_end_time > item[3])
+                        ):
+                        enrolled_already = True
+                        batch_name = item[4]
+                        break
             if enrolled_already:
 
                 data = {
-                    "message": f"User already enrolled for \"{batch_name}\" batch during selected dates.",
+                    "message": f"User already enrolled for \"{batch_name}\" batch during selected dates and time.",
                     "enrolled_already": enrolled_already,
                     "batch_name": batch_name
                 }
