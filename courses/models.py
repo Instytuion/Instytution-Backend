@@ -62,7 +62,9 @@ class LessonImage(ModelTrackeBaseClass):
 
 class LessonVideo(ModelTrackeBaseClass):
     lesson = models.ForeignKey(Lesson, related_name='videos', on_delete=models.CASCADE)
-    video = CloudinaryField('video', resource_type='video', blank=True, null=True)
+    video = CloudinaryField('video', resource_type='video', blank=True,  null=True)
+
+
 
     class Meta:
         verbose_name = 'Lesson Video'
