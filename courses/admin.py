@@ -50,7 +50,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
-    list_display = ('name', 'course', 'instructor', 'time_slot', 'start_date', 'end_date', 'created_by', 'updated_by', 'created_at', 'updated_at')
+    list_display = ('name', 'course', 'instructor', 'start_date', 'end_date', 'created_by', 'updated_by', 'created_at', 'updated_at')
     search_fields = ('name',)
     list_filter = ('created_by', 'updated_by', 'created_at', 'updated_at', 'course', 'instructor')
 
