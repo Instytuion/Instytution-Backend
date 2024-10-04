@@ -24,8 +24,10 @@ class BlockUnblockUserViewBaseClass(APIView):
 class BlockUnblockUserView(BlockUnblockUserViewBaseClass):
     """API endpoint to block or unblock a user.(without instructore)"""
     permission_classes = [IsAdminAndAuthenticated]
+
     def validate(self, request, user_id=None):
         pass
+
 
 class InstructoreBlockUnblock(BlockUnblockUserViewBaseClass):
     """API endpoint to block or unblock an instructor"""
