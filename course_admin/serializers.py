@@ -174,3 +174,115 @@ class LessonSerializer(serializers.ModelSerializer):
                     lesson=lesson_instance,
                     **media
                 )
+
+
+class BatchSerializer(serializers.ModelSerializer):
+    course_name=serializers.CharField(source='course.name', read_only=True)
+    instructor_name=serializers.SerializerMethodField()
+
+    class Meta:
+        model = Batch
+        fields = [
+            'id',
+            'name', 
+            'course_name', 
+            'instructor_name', 
+            'start_date', 
+            'end_date', 
+            'start_time', 
+            'end_time', 
+            'strength'
+        ]
+
+    def get_instructor_name(self, obj):
+        first_name = obj.instructor.first_name
+        last_name = obj.instructor.last_name
+
+        return f"{first_name} {last_name}"
+
+    def validate_time_conflict(self, instructor, start_date, end_date, start_time, end_time, instance=None):
+       
+        overlapping_batches = Batch.objects.filter(
+            instructor=instructor,
+            start_date__lte=end_date,
+            end_date__gte=start_date,
+            start_time__lt=end_time,
+            end_time__gt=start_time
+        )
+
+        if instance:
+            overlapping_batches = overlapping_batches.exclude(id=instance.id)
+
+        if overlapping_batches.exists():
+            raise serializers.ValidationError({
+                'start_date': "The instructor already has a batch scheduled for the same time period on this date."
+            })
+    
+    def create(self, validated_data):
+        request = self.context.get('request')
+        course_name = request.data.get('course_name')
+        instructor_id = request.data.get('instructor')
+        start_date = validated_data.get('start_date')
+        end_date = validated_data.get('end_date')
+        start_time = validated_data.get('start_time')
+        end_time = validated_data.get('end_time')
+        validated_data['created_by'] = request.user
+        validated_data['updated_by'] = request.user
+        
+        course = Course.objects.filter(name__iexact=course_name).first()
+        if not course:
+            raise serializers.ValidationError({'course_name': f"Course with name '{course_name}' not found."})
+
+        instructor = CustomUser.objects.filter(id=instructor_id).first()
+        if not instructor:
+            raise serializers.ValidationError({'instructor': f"Instructor with id '{instructor_id}' not found."})
+
+        validated_data['course'] = course
+        validated_data['instructor'] = instructor
+
+        self.validate_time_conflict(instructor, start_date, end_date, start_time, end_time)
+
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        course_name = request.data.get('course_name', None)
+        instructor_id = request.data.get('instructor', None)
+        instructor = validated_data.get('instructor', instance.instructor)
+        start_date = validated_data.get('start_date', instance.start_date)
+        end_date = validated_data.get('end_date', instance.end_date)
+        start_time = validated_data.get('start_time', instance.start_time)
+        end_time = validated_data.get('end_time', instance.end_time)
+
+        
+        if course_name:
+            course = Course.objects.filter(name__iexact=course_name).first()
+            if not course:
+                raise serializers.ValidationError({'course_name': f"Course with name '{course_name}' not found."})
+            instance.course = course
+            validated_data['course'] = course
+        
+      
+        if instructor_id:
+            instructor = CustomUser.objects.filter(id=instructor_id).first()
+            if not instructor:
+                raise serializers.ValidationError({'instructor': f"Instructor with id '{instructor_id}' not found."})
+            instance.instructor = instructor
+            validated_data['instructor'] = instructor
+
+        print('validated_data:',validated_data)
+
+        self.validate_time_conflict(instructor, start_date, end_date, start_time, end_time, instance)
+
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+
+        # Set updated_by field
+        instance.updated_by = request.user
+
+        # Save the updated instance
+        instance.save()
+        return instance
+
+    
+    

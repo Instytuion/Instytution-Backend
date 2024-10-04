@@ -190,3 +190,20 @@ class LessonImageCreateView(generics.CreateAPIView):
             created_by=self.request.user,
             updated_by=self.request.user
         )
+
+
+class ListCreateBatchView(generics.ListCreateAPIView):
+    permission_classes = [IsCourseAdmin]
+    serializer_class = BatchSerializer
+
+    def get_queryset(self):
+        course_name = self.kwargs['course_name']        
+        queryset = Batch.objects.filter(course__name__iexact=course_name)
+        return queryset
+
+class RetrieveUpdateBatchView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsCourseAdmin]  
+    serializer_class = BatchSerializer
+
+    def get_queryset(self):
+        return Batch.objects.filter(id=self.kwargs['pk'])

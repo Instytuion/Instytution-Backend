@@ -15,4 +15,6 @@ urlpatterns = [
     path('delete_lesson_video/<int:pk>/', LessonVideoDeleteView.as_view(), name='delete_lesson_video'),
     path('delete_lesson_pdf/<int:pk>/', LessonPdfDeleteView.as_view(), name='delete_lesson_pdf'),
     path('add_lesson_image/', LessonImageCreateView.as_view(), name='add_lesson_image'),
+    path('batches/<str:course_name>/', ListCreateBatchView.as_view(), name='list_Create_batches'),
+    path('batch/<int:pk>/', RetrieveUpdateBatchView.as_view(), name='Retreive_update_batches'),
 ]

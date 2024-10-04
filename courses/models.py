@@ -4,6 +4,8 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from accounts.models import CustomUser
 from accounts.constants import NOT_AVAILABLE
+from django.core.validators import MaxValueValidator
+from datetime import time
 
 
 class ModelTrackeBaseClass(models.Model):
@@ -104,10 +106,7 @@ class Course(ModelTrackeBaseClass):
         return self.name
 
 class Batch(ModelTrackeBaseClass):
-    TIME_CHOICES = [
-        ('morning', 'Morning'),
-        ('afternoon', 'Afternoon'),
-    ]
+
     name = models.CharField(max_length=100, unique=True)
     course = models.ForeignKey(
         'Course', 
@@ -123,11 +122,9 @@ class Batch(ModelTrackeBaseClass):
     )
     start_date = models.DateField()
     end_date = models.DateField()
-    time_slot = models.CharField(
-        max_length=10,
-        choices=TIME_CHOICES,
-        default='morning'
-    )
+    start_time = models.TimeField(default=time(8, 0))  
+    end_time = models.TimeField(default=time(10, 0))   # 
+    strength = models.IntegerField(validators=[MaxValueValidator(50)], default=9)
 
     class Meta:
         constraints = [
