@@ -35,7 +35,10 @@ class BatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Batch
 
-        fields = ['id', 'name', 'course_name', 'instructor_name', 'start_date', 'end_date', 'time_slot', 'student_count']
+        fields = [
+            'id', 'name', 'course_name', 'instructor_name', 'start_date', 'end_date', 
+            'start_time', 'end_time', 'student_count', 'strength'
+                  ]
 
     def get_instructor_name(self, obj):
         first_name = obj.instructor.first_name
