@@ -24,6 +24,8 @@ class BlockUnblockUserViewBaseClass(APIView):
 class BlockUnblockUserView(BlockUnblockUserViewBaseClass):
     """API endpoint to block or unblock a user.(without instructore)"""
     permission_classes = [IsAdminAndAuthenticated]
+    def validate(self, request, user_id=None):
+        pass
 
 class InstructoreBlockUnblock(BlockUnblockUserViewBaseClass):
     """API endpoint to block or unblock an instructor"""
@@ -59,6 +61,8 @@ class UserListByRoleViewBaseClass(ListAPIView):
 class UserListByRoleView(UserListByRoleViewBaseClass):
     """To list users by their roles with search and pagination support. (without Instructore)"""
     permission_classes = [IsAdminAndAuthenticated]
+    def validate(self):
+        pass
 
 class InstructorsLIstView(UserListByRoleViewBaseClass):
     permission_classes = [IsCourseAdmin]
