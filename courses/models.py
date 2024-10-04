@@ -181,3 +181,4 @@ class BatchStudents(models.Model):
         on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    
