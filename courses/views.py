@@ -2,6 +2,7 @@ from .serializers import(
     RetrieveProgramsSerializer,
     RetrieveCourseSerializer,
     BatchSerializer,
+    InstructorSerializer,
     
 )
 from .models import(
@@ -14,7 +15,8 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django.utils import timezone
 from rest_framework import generics
 from accounts.permissions import IsCourseAdmin
-
+from accounts.models import CustomUser
+from rest_framework.exceptions import PermissionDenied
 
 class RetrieveProgramsView(ListAPIView):
     '''
@@ -95,3 +97,13 @@ class RetrieveCourseBatchesView(ListAPIView):
         return Batch.objects.filter(start_date__gt=current_date,course__name__iexact=course_name)
 
     
+#temporary api for listing instructors without pagination and add this veiw to instructor app when it created
+
+class ListInstructorsApiView(ListAPIView):
+    serializer_class = InstructorSerializer
+
+    def get_queryset(self):
+        role = self.kwargs['role']
+        if role != 'instructor':
+            raise PermissionDenied({'error': 'You DO not have permission to interact with this user'})
+        return CustomUser.objects.filter(role=role)
