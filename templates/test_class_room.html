@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+    rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <title>Class Room</title>
+
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;  
+        }
+        video {
+            border-radius: 25%;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid bg-light h-100 w-100 p-3">
+        <div class="w-100 h-50  p-3">
+            <h3 id="label-username">User Name</h3>
+            <div class="mb-3">
+                <input type="text" id="username">
+                <button class="ms-3" id="btn-join">Join Class</button>
+            </div>
+            <div class="main-grid-container d-flex flex-column flex-md-row" style="gap: 10px;">
+                <div id="video-container" class="p-3 mb-3 bg-info-subtle flex-grow-1">
+                    <div class="d-flex flex-wrap mb-2" style="gap: 10px;">
+                        <video id="local-video" autoplay playsinline></video>                       
+                    </div>
+                    <button id="btn-toggle-audio">Mute Audio</button>
+                    <button id="btn-toggle-video">Video Off</button>
+                </div>
+                <div id="chat" class="bg-success-subtle col-md-3 p-3 position-relative" style="min-height: 25vh;">
+                    <h3>Chats</h3>
+                    <div id="messages">
+                        <ul id="message-list"></ul>
+                    </div>
+                    <div class="position-absolute bottom-0 start-0 end-0 p-3">
+                        <input type="text" id="msg">
+                        <button id="btn-send-msg">Send Message</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('inside the JS');
+    
+            var labelUsername = document.getElementById("label-username");
+            var usernameInput = document.getElementById("username");
+            var btnJoin = document.getElementById("btn-join");
+    
+            var username;
+            var webSocket;
+
+            function webSocketOnMessage(event){
+                var parsedData = JSON.parse(event);
+                var message = parsedData["message"];
+                
+            };
+    
+            btnJoin.addEventListener('click', () => {
+                username = usernameInput.value;
+                console.log("username is - ", username);
+             
+                if(username === '') {
+                    return;
+                }
+    
+                usernameInput.value = '';
+                usernameInput.disabled = true;
+                usernameInput.style.visibility = 'hidden';
+    
+                btnJoin.disabled = true;
+                btnJoin.style.visibility = 'hidden';
+    
+                labelUsername.innerHTML = username;
+
+                var loc = window.location;
+                var wsStart = 'ws://';
+
+                if(loc.protocol == 'https:'){
+                    wsStart = 'wss://';
+                }
+                var endPoint = wsStart + 'localhost:8000/class-room/'
+                console.log('end point is - ', endPoint);
+
+                webSocket = new WebSocket(endPoint);
+
+                webSocket.addEventListener('open', (e)=>{
+                    console.log("connection opened");
+                    
+                })
+                webSocket.addEventListener('message',webSocketOnMessage );
+                webSocket.addEventListener('close', (e)=>{
+                    console.log("connection clossed");
+                })
+                webSocket.addEventListener('error', (e)=>{
+                    console.log("error occurred - ");
+                })
+                
+            });
+        });
+    </script>
+</body>
+</html>
