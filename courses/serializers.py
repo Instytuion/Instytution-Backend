@@ -3,6 +3,7 @@ from .models import (
     Course,
     Batch,
 )
+from accounts.models import CustomUser
 
 class RetrieveProgramsSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
@@ -49,5 +50,15 @@ class BatchSerializer(serializers.ModelSerializer):
     def get_student_count(self, obj):
         return obj.batch_students.count()
         
+class InstructorSerializer(serializers.ModelSerializer):
+    instructor_name=serializers.SerializerMethodField()
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'email' , 'instructor_name', 'profile_picture']
 
+    def get_instructor_name(self, obj):
+        first_name = obj.first_name
+        last_name = obj.last_name
+
+        return f"{first_name} {last_name}"
 
