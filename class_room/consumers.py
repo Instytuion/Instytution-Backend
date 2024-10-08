@@ -4,8 +4,10 @@ import json
 class ClassRoomConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         print('inside connect consumer')
-        print('user scope -', self.scope["user"])
-        self.room_group_name = 'Class-Room'
+        user = self.scope["user"]
+        role = user.role
+        batch_name = self.scope['url_route']['kwargs']['batch_name']
+        self.room_group_name = f'Room-{batch_name}'
 
         await self.channel_layer.group_add(
             self.room_group_name,
