@@ -33,7 +33,6 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1',
-    '3ffb-2405-201-f00d-380c-8050-35d-5fe7-a9f4.ngrok-free.app',
 ]
 
 
@@ -234,3 +233,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+#Xirsys TURN credentials
+TURN_USERNAME = config('TURN_USERNAME')
+TURN_SECRET = config('TURN_SECRET')
