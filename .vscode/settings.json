@@ -1,0 +1,4 @@
+{
+    "debugpy.showPythonInlineValues": true,
+    "quokka.automaticRestart": false
+}
