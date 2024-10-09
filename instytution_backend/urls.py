@@ -24,4 +24,5 @@ urlpatterns = [
     path('custom-admin/',include('custom_admin.urls')),
     path('payments/',include('payments.urls')),
     path('course-admin/',include('course_admin.urls')),
+    path('instructor/',include('instructor.urls')),
 ]
