@@ -179,6 +179,7 @@ class LessonSerializer(serializers.ModelSerializer):
 class BatchSerializer(serializers.ModelSerializer):
     course_name=serializers.CharField(source='course.name', read_only=True)
     instructor_name=serializers.SerializerMethodField()
+    instructor_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Batch
@@ -191,7 +192,8 @@ class BatchSerializer(serializers.ModelSerializer):
             'end_date', 
             'start_time', 
             'end_time', 
-            'strength'
+            'strength',
+            'instructor_id'
         ]
 
     def get_instructor_name(self, obj):
@@ -199,6 +201,10 @@ class BatchSerializer(serializers.ModelSerializer):
         last_name = obj.instructor.last_name
 
         return f"{first_name} {last_name}"
+    def get_instructor_id(self, obj):
+        instructor_id = obj.instructor.id
+        return instructor_id
+    
 
     def validate_time_conflict(self, instructor, start_date, end_date, start_time, end_time, instance=None):
        
@@ -215,7 +221,7 @@ class BatchSerializer(serializers.ModelSerializer):
 
         if overlapping_batches.exists():
             raise serializers.ValidationError({
-                'start_date': "The instructor already has a batch scheduled for the same time period on this date."
+                'start_time': "The instructor already has a batch scheduled for the same time period on this date."
             })
     
     def create(self, validated_data):
