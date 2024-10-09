@@ -30,13 +30,17 @@ SECRET_KEY = config('DJ_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1',
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'daphne',
+    'channels', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +53,7 @@ INSTALLED_APPS = [
     'custom_admin',
     'payments',
     'course_admin',
+    'class_room',
     'instructor',
     #third party
     'rest_framework',
@@ -219,3 +224,13 @@ CACHES = {
 #Razorpay
 RAZORPAY_KEY_ID=config("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET=config("RAZORPAY_KEY_SECRET")
+
+#Channel layer settings
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [("127.0.0.1", 6379)], 
+        },
+    },
+}
