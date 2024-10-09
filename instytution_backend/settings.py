@@ -234,7 +234,3 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
-#Xirsys TURN credentials
-TURN_USERNAME = config('TURN_USERNAME')
-TURN_SECRET = config('TURN_SECRET')
