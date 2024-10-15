@@ -2,8 +2,11 @@ from rest_framework import serializers
 from .models import (
     Course,
     Batch,
+    BatchStudents,
+    Lesson
 )
 from accounts.models import CustomUser
+from course_admin.serializers import LessonSerializer
 
 class RetrieveProgramsSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
@@ -62,3 +65,15 @@ class InstructorSerializer(serializers.ModelSerializer):
 
         return f"{first_name} {last_name}"
 
+class StudentBatchSerializer(serializers.ModelSerializer):
+    lesson = serializers.SerializerMethodField()
+    batch = BatchSerializer()
+    class Meta:
+        model = BatchStudents
+        fields = ['batch', 'student','lesson']
+    def get_lesson(self, obj):
+        course = obj.batch.course
+        print('course is :', course)
+        data = Lesson.objects.filter(course=course)
+        print('data is :', data)
+        return LessonSerializer(data, many=True).data
