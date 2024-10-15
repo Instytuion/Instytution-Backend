@@ -17,3 +17,9 @@ class IsCourseAdmin(permissions.BasePermission):
         return request.user.is_authenticated and request.user.role == 'course_admin'
     
 
+class IsShopAdmin(permissions.BasePermission):
+    """
+    Custom permission to grant access only to users with the 'shop_admin' role and who are authenticated.
+    """
+    def has_permission(self, request,view):
+        return request.user.is_authenticated and request.user.role == 'shop_admin'
