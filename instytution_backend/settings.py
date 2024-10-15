@@ -55,6 +55,9 @@ INSTALLED_APPS = [
     'course_admin',
     'class_room',
     'instructor',
+    'store',
+    'shop_admin',
+    
     #third party
     'rest_framework',
     'cloudinary',
@@ -66,8 +69,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -77,7 +80,10 @@ MIDDLEWARE = [
 ]
 
 
-CORS_ALLOW_ALL_ORIGINS = True
+#CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173', 
+]
 CORS_ALLOW_CREDENTIALS = True
 
 
@@ -85,6 +91,10 @@ CORS_ALLOW_HEADERS = [
     'content-type',
     'authorization',
     'x-csrftoken',
+    'accept',
+    'accept-encoding',
+    'origin',
+    'user-agent',
 ]
 CORS_EXPOSE_HEADERS = ['Set-Cookie']
 

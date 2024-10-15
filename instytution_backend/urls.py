@@ -27,6 +27,7 @@ urlpatterns = [
     path('payments/',include('payments.urls')),
     path('course-admin/',include('course_admin.urls')),
     path('instructor/',include('instructor.urls')),
+    path('store/',include('shop_admin.urls')),
 ]
 if settings.DEBUG:
     import debug_toolbar
