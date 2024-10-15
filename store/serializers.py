@@ -4,8 +4,6 @@ from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 
-
-
 class ProductImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImages
