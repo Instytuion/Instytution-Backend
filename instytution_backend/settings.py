@@ -55,6 +55,9 @@ INSTALLED_APPS = [
     'course_admin',
     'class_room',
     'instructor',
+    'store',
+    'shop_admin',
+    
     #third party
     'rest_framework',
     'cloudinary',
