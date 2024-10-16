@@ -111,13 +111,14 @@ class ListInstructorsApiView(ListAPIView):
         return CustomUser.objects.filter(role=role)
     
 class StudentsBatchesListView(ListAPIView):
+    """
+    This View is for students BatchesLIsListView
+    """
     serializer_class = StudentBatchSerializer
     lookup_field='email'
     
     def get_queryset(self):
         email = self.kwargs['email']
-        print('email: %s' % email)
         data =  BatchStudents.objects.filter(student__email=email)
-        print('data is :',data)
         return data
     
