@@ -9,4 +9,5 @@ urlpatterns = [
     path('related_courses/<str:course_name>/', RetrieveRelatedCoursesView.as_view(), name='related_courses'),
     path('course_batches/<str:course_name>/', RetrieveCourseBatchesView.as_view(), name='Course_batches'),
     path('instructors/<str:role>/', ListInstructorsApiView.as_view(), name='List_instructors'),
+    path('students/<str:email>/', StudentsBatchesListView.as_view(), name='List_students_batches'),
 ]

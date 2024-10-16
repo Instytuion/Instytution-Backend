@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     'corsheaders',
+    'debug_toolbar',
     
 ]
 
@@ -75,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 
@@ -244,3 +246,9 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# For Debug Toolbar
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost',
+]
