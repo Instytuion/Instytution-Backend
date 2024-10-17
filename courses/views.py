@@ -3,13 +3,15 @@ from .serializers import(
     RetrieveCourseSerializer,
     BatchSerializer,
     InstructorSerializer,
+    StudentBatchSerializer
     
 )
 from .models import(
     Program,
     Course,
     CourseWeekDescription,
-    Batch
+    Batch,
+    BatchStudents,
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django.utils import timezone
@@ -107,3 +109,16 @@ class ListInstructorsApiView(ListAPIView):
         if role != 'instructor':
             raise PermissionDenied({'error': 'You DO not have permission to interact with this user'})
         return CustomUser.objects.filter(role=role)
+    
+class StudentsBatchesListView(ListAPIView):
+    """
+    This View is for students BatchesLIsListView
+    """
+    serializer_class = StudentBatchSerializer
+    lookup_field='email'
+    
+    def get_queryset(self):
+        email = self.kwargs['email']
+        data =  BatchStudents.objects.filter(student__email=email)
+        return data
+    
