@@ -7,10 +7,17 @@ class ProductCategories(ModelTrackeBaseClass):
 
     def __str__(self) -> str:
         return self.name
+        
+class ProductSubCategories(ModelTrackeBaseClass):
+    name = models.CharField(max_length=50)
+    category =  models.ForeignKey(ProductCategories, on_delete=models.CASCADE, related_name='subcategories')
+
+    def __str__(self) -> str:
+        return self.name
 
 class Products(ModelTrackeBaseClass):
     name = models.CharField(max_length=100, unique=True)
-    category = models.ForeignKey(ProductCategories, related_name='products', on_delete=models.CASCADE)
+    sub_category = models.ForeignKey(ProductSubCategories, related_name='products', on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
 

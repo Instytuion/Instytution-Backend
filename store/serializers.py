@@ -1,8 +1,18 @@
 from rest_framework import serializers
-from .models import Products, ProductImages, ProductDetails, ProductCategories
+from .models import Products, ProductImages, ProductDetails, ProductCategories, ProductSubCategories
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
+
+class ProductSubCategorySerializer(serializers.ModelSerializer):
+    category_name =  serializers.CharField(source='category.name', read_only=True)
+
+    class Meta:
+        model = ProductSubCategories
+        fields = ['name', 'category_name']
+        extra_kwargs = {
+            'name': {'required': True}  
+        }
 
 class ProductImagesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,20 +29,24 @@ class ProductDetailsSerializer(serializers.ModelSerializer):
         ]
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='category.name')  
+    sub_category = ProductSubCategorySerializer()  
     details = ProductDetailsSerializer(many=True)  
 
     class Meta:
         model = Products
         fields = [
-            'id', 'name', 'category', 'description', 'is_active', 'details'
+            'id', 'name', 'sub_category', 'description', 'is_active', 'details'
         ]
 
     def create(self, validated_data): 
+        print('entered in creating product')
         with transaction.atomic():
-            category_data = validated_data.pop('category')
-            category_name = category_data.get('name')
-            print('category name,  ', category_name)
+            
+            # Extract sub_category data
+            sub_category_data = validated_data.pop('sub_category')
+            sub_category_name = sub_category_data.get('name')
+            print('category name,  ', sub_category_name)
+            
             details_data = validated_data.pop('details', []) 
             print("details_data", details_data)
 
@@ -40,21 +54,21 @@ class ProductSerializer(serializers.ModelSerializer):
             validated_data['created_by'] = request.user
             validated_data['updated_by'] = request.user
 
+            # Look for existing sub-category by name
             try:
-                print('reached in category checking', category_name)
-                category = ProductCategories.objects.filter(name=category_name).first()
-                print('category,  ', category)
-
-            except ProductCategories.DoesNotExist:
-                raise ValidationError(f"Category '{category_name}' does not exist.")
-
+                sub_category = ProductSubCategories.objects.get(name=sub_category_name)
+            except ProductSubCategories.DoesNotExist:
+                raise ValidationError(f"Sub-category '{sub_category_name}' does not exist.")
+            
+            # Create the product
             product = Products.objects.create(
-                category=category,
+                sub_category=sub_category,
                 **validated_data
             )
             
             print('product created')
             
+            # Create the product details and images
             for detail_data in details_data:
                 images_data = detail_data.pop('images', [])
 
@@ -64,6 +78,7 @@ class ProductSerializer(serializers.ModelSerializer):
                     updated_by=request.user, 
                     **detail_data
                 )
+                
                 if images_data:
                     for image_data in images_data:
                         ProductImages.objects.create(
@@ -78,5 +93,3 @@ class ProductSerializer(serializers.ModelSerializer):
                     
         return product
 
-
-        
