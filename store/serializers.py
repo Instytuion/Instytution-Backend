@@ -17,25 +17,25 @@ class ProductSubCategorySerializer(serializers.ModelSerializer):
 class ProductImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImages
-        fields = ['image']
+        fields = ['image', 'color']
 
 class ProductDetailsSerializer(serializers.ModelSerializer):
-    images = ProductImagesSerializer(many=True,)  
-
+    
     class Meta:
         model = ProductDetails
         fields = [
-            'id', 'size', 'price', 'color', 'stock', 'price', 'images'
+            'id', 'size', 'price', 'color', 'stock', 'price'
         ]
 
 class ProductSerializer(serializers.ModelSerializer):
     sub_category = ProductSubCategorySerializer()  
-    details = ProductDetailsSerializer(many=True)  
+    details = ProductDetailsSerializer(many=True)
+    images = ProductImagesSerializer(many=True,)    
 
     class Meta:
         model = Products
         fields = [
-            'id', 'name', 'sub_category', 'description', 'is_active', 'details'
+            'id', 'name', 'sub_category', 'description', 'is_active', 'details', 'images'
         ]
 
     def create(self, validated_data): 

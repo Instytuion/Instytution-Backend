@@ -25,8 +25,10 @@ class Products(ModelTrackeBaseClass):
         return self.name
 
 class ProductImages(ModelTrackeBaseClass):
-    product = models.ForeignKey('ProductDetails', related_name='images', on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, related_name='images', on_delete=models.CASCADE)
+    color = models.CharField(max_length=50, null=True, blank=True)  
     image = CloudinaryField('image', folder='product_images/')
+    
 
 class ProductDetails(ModelTrackeBaseClass):
     product = models.ForeignKey(Products, related_name='details', on_delete=models.CASCADE)
@@ -34,5 +36,8 @@ class ProductDetails(ModelTrackeBaseClass):
     color = models.CharField(max_length=50, null=True, blank=True)
     stock = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def  __str__(self) -> str:
+        return f"{self.product.name} - {self.color}"
 
 

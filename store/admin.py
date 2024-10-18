@@ -23,7 +23,7 @@ class ProductsAdmin(admin.ModelAdmin):
 # Admin for Product Images
 @admin.register(ProductImages)
 class ProductImagesAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product', 'image') 
+    list_display = ('id', 'product', 'image', 'color') 
     search_fields = ('product__name',)         
 
 # Admin for Product Details
