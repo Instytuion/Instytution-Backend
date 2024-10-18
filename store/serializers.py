@@ -17,25 +17,25 @@ class ProductSubCategorySerializer(serializers.ModelSerializer):
 class ProductImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImages
-        fields = ['image']
+        fields = ['image', 'color']
 
 class ProductDetailsSerializer(serializers.ModelSerializer):
-    images = ProductImagesSerializer(many=True,)  
-
+    
     class Meta:
         model = ProductDetails
         fields = [
-            'id', 'size', 'price', 'color', 'stock', 'price', 'images'
+            'id', 'size', 'price', 'color', 'stock', 'price'
         ]
 
 class ProductSerializer(serializers.ModelSerializer):
     sub_category = ProductSubCategorySerializer()  
-    details = ProductDetailsSerializer(many=True)  
+    details = ProductDetailsSerializer(many=True)
+    images = ProductImagesSerializer(many=True,)    
 
     class Meta:
         model = Products
         fields = [
-            'id', 'name', 'sub_category', 'description', 'is_active', 'details'
+            'id', 'name', 'sub_category', 'description', 'is_active', 'details', 'images'
         ]
 
     def create(self, validated_data): 
@@ -49,6 +49,8 @@ class ProductSerializer(serializers.ModelSerializer):
             
             details_data = validated_data.pop('details', []) 
             print("details_data", details_data)
+            
+            images_data = validated_data.pop('images', [])
 
             request = self.context.get('request')
             validated_data['created_by'] = request.user
@@ -70,7 +72,6 @@ class ProductSerializer(serializers.ModelSerializer):
             
             # Create the product details and images
             for detail_data in details_data:
-                images_data = detail_data.pop('images', [])
 
                 product_detail =  ProductDetails.objects.create(
                     product=product,
@@ -79,13 +80,13 @@ class ProductSerializer(serializers.ModelSerializer):
                     **detail_data
                 )
                 
-                if images_data:
-                    for image_data in images_data:
+            if images_data:
+                    for img_data in images_data:
                         ProductImages.objects.create(
-                            product=product_detail,
+                            product=product,
                             created_by=request.user,
                             updated_by=request.user, 
-                            **image_data
+                            **img_data
                         )
                         
             print('completed product creation')
