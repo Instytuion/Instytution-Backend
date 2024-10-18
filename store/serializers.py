@@ -49,6 +49,8 @@ class ProductSerializer(serializers.ModelSerializer):
             
             details_data = validated_data.pop('details', []) 
             print("details_data", details_data)
+            
+            images_data = validated_data.pop('images', [])
 
             request = self.context.get('request')
             validated_data['created_by'] = request.user
@@ -70,7 +72,6 @@ class ProductSerializer(serializers.ModelSerializer):
             
             # Create the product details and images
             for detail_data in details_data:
-                images_data = detail_data.pop('images', [])
 
                 product_detail =  ProductDetails.objects.create(
                     product=product,
@@ -79,13 +80,13 @@ class ProductSerializer(serializers.ModelSerializer):
                     **detail_data
                 )
                 
-                if images_data:
-                    for image_data in images_data:
+            if images_data:
+                    for img_data in images_data:
                         ProductImages.objects.create(
-                            product=product_detail,
+                            product=product,
                             created_by=request.user,
                             updated_by=request.user, 
-                            **image_data
+                            **img_data
                         )
                         
             print('completed product creation')
