@@ -15,6 +15,8 @@ class ProductSubCategorySerializer(serializers.ModelSerializer):
         }
 
 class ProductImagesSerializer(serializers.ModelSerializer):
+    image =  serializers.ImageField(use_url=True,)
+    
     class Meta:
         model = ProductImages
         fields = ['image', 'color']
@@ -90,7 +92,6 @@ class ProductSerializer(serializers.ModelSerializer):
                         )
                         
             print('completed product creation')
-
-                    
+          
         return product
 
