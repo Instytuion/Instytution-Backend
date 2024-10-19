@@ -20,6 +20,14 @@ class ProductsListCreateApiView(generics.ListCreateAPIView):
         category_name = self.kwargs['category']
         queryset = Products.objects.filter(sub_category__category__name__iexact=category_name)
         
+        filtered_qs = ProductFilter(self.request.GET, queryset=queryset).qs
+
+        # Return distinct products
+        if not filtered_qs.exists():
+            raise ValidationError({"error": f"Category '{category_name}' does not exist or has no products."})
+        
+        return filtered_qs.distinct() 
+        
         if not queryset.exists():
             raise ValidationError({"error": f"Category '{category_name}' does not exist or has no products."})
         
