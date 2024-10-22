@@ -151,3 +151,10 @@ class PasswordResetRequestSerializer(serializers.Serializer):
     
 class PasswordResetConfirmSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
+
+from .models import Whishlists
+
+class WishlistItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Whishlists
+        fields = ['id', 'product', 'added_at']

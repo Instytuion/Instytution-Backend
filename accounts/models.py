@@ -54,3 +54,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+from store.models import Products
+
+class Whishlists(models.Model):
+    user = models.ForeignKey(CustomUser,related_name='wishlist', on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, related_name='wishlist_items', on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.user.email} - {self.product.name}"
+    
+class Rating(models.Model):
+    user = models.ForeignKey(CustomUser, related_name='ratings', on_delete=models.CASCADE)
+    product = models.ForeignKey(Products,related_name="product_ratings",on_delete=models.CASCADE)
+    rating = models.IntegerField()
+    feedback = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True) 
