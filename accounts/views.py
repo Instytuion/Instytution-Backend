@@ -1,22 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,viewsets
 from django.core.cache import cache
-from .serializers import (
-    UserSerializer,
-    OTPSerializer,
-    SignInSerializer,
-    GoogleSignInSerializer,
-    VerifyEmailUpdateOTpSerializer,
-    PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer
-)
+from .serializers import *
 from utils.utils import generate_otp , send_otp_email , send_credentials_email
-from .models import CustomUser
+from .models import CustomUser,Whishlists
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .permissions import IsAdminAndAuthenticated,IsCourseAdmin
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView,RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveUpdateAPIView
 from django.contrib.auth.tokens import default_token_generator
@@ -26,8 +18,9 @@ from django.conf import settings
 from django.utils.encoding import force_str , force_bytes
 from django.core.mail import EmailMessage
 from rest_framework_simplejwt.views import TokenRefreshView
-
-
+from rest_framework import generics
+from store.serializers import ProductSerializer
+from store.models import Products
 
 class CustomTokenRefreshView(TokenRefreshView):
     """
@@ -466,4 +459,45 @@ class PasswordResetConfirmView(GenericAPIView):
         except Exception as e:
             print(f"Error in password reset: {str(e)}")
             return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-              
+
+
+
+class WhishlistCreateView(generics.ListCreateAPIView):
+    """
+    Create and List  wishlist for a user .
+    
+    """
+    queryset = Whishlists.objects.all()
+    serializer_class = WishlistItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset().filter(user=self.request.user)
+        serializer = self.get_serializer(queryset, many=True)
+        for index, wishlist_item in enumerate(serializer.data):
+            product = wishlist_item['product'] 
+            product_instance = Products.objects.get(id=product)
+            product_serializer = ProductSerializer(product_instance)
+
+            serializer.data[index]['product_details'] = product_serializer.data
+
+        data = {
+            'wishlists': serializer.data,
+        }
+        return Response(data)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+class WhishlistDeleteView(generics.DestroyAPIView):
+    """
+    Delete a wishlist item for a user.
+    
+    """
+    queryset = Whishlists.objects.all()
+    serializer_class = WishlistItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

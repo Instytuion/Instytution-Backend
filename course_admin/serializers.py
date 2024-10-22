@@ -180,7 +180,7 @@ class BatchSerializer(serializers.ModelSerializer):
     course_name=serializers.CharField(source='course.name', read_only=True)
     instructor_name=serializers.SerializerMethodField()
     instructor_id = serializers.SerializerMethodField(read_only=True)
-
+    programs_name = serializers.CharField(read_only=True,source='course.program.name')
     class Meta:
         model = Batch
         fields = [
@@ -193,7 +193,8 @@ class BatchSerializer(serializers.ModelSerializer):
             'start_time', 
             'end_time', 
             'strength',
-            'instructor_id'
+            'instructor_id',
+            'programs_name'
         ]
 
     def get_instructor_name(self, obj):
