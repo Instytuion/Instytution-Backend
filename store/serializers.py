@@ -94,4 +94,24 @@ class ProductSerializer(serializers.ModelSerializer):
             print('completed product creation')
           
         return product
+    
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
 
+        sub_category_data = validated_data.pop('sub_category', None)
+        if sub_category_data:
+            sub_category_name = sub_category_data.get('name')
+            try:
+                sub_category = ProductSubCategories.objects.get(name=sub_category_name)
+                instance.sub_category = sub_category
+            except ProductSubCategories.DoesNotExist:
+                raise ValidationError(f"Sub-category '{sub_category_name}' does not exist.")
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.updated_by = request.user
+
+        instance.save()
+        
+        return instance
