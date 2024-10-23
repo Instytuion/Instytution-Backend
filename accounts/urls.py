@@ -17,4 +17,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('whishlist/', WhishlistCreateView.as_view(), name='whishlist-create'),
     path('whishlist/<int:pk>/', WhishlistDeleteView.as_view(), name='whishlist-delete'),
+    path('cart/detail/', CartItemListCreateView.as_view(), name='cart-item-list-create'),  
+    path('cart/detail/<int:pk>/', CartItemListCreateView.as_view(), name='cart-item-list-create'),  
+    path('cart/<int:pk>/', CartItemDetailView.as_view(), name='cart-item-detail'),  
 ]

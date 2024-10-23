@@ -2,7 +2,6 @@
 
 from django.db import models
 from cloudinary.models import CloudinaryField
-from accounts.models import CustomUser
 from accounts.constants import NOT_AVAILABLE
 from django.core.validators import MaxValueValidator
 from datetime import time
@@ -12,12 +11,12 @@ class ModelTrackeBaseClass(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
-        CustomUser,
+        'accounts.CustomUser',  
         related_name='%(class)s_created',
         on_delete=models.CASCADE
     )
     updated_by = models.ForeignKey( 
-        CustomUser,
+        'accounts.CustomUser',  
         related_name='%(class)s_updated',
         on_delete=models.CASCADE
     )
@@ -118,7 +117,7 @@ class Batch(ModelTrackeBaseClass):
         blank=True 
     )
     instructor = models.ForeignKey(
-        CustomUser, 
+         'accounts.CustomUser',   
         related_name='instructed_batches', 
         on_delete=models.Case
     )
@@ -179,7 +178,7 @@ class BatchStudents(models.Model):
         on_delete=models.CASCADE
     )
     student = models.ForeignKey(
-        CustomUser, 
+         'accounts.CustomUser',   
         related_name='enrolled_batches', 
         on_delete=models.CASCADE
     )

@@ -1,11 +1,12 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import *
 from django.core.cache import cache
 from .utils import Google_signin, register_google_user
 from rest_framework.exceptions import AuthenticationFailed
 from accounts import constants
 from django.conf import settings
-
+from store.serializers import ProductImagesSerializer
+from store.models import ProductDetails
 
 class UserSerializer(serializers.ModelSerializer):
     email         = serializers.EmailField(required=True)
@@ -152,9 +153,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 class PasswordResetConfirmSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
 
-from .models import Whishlists
-from store.serializers import ProductImagesSerializer
-from store.models import ProductDetails
 class ProductSpecificDetailSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name')
     product_description = serializers.CharField(source='product.description') 
@@ -163,8 +161,48 @@ class ProductSpecificDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductDetails
         fields = ['product_name', 'product_description', 'product_id', 'product_images','size','color','price','stock']
+
+
 class WishlistItemSerializer(serializers.ModelSerializer):
     product = ProductSpecificDetailSerializer()
     class Meta:
         model = Whishlists
         fields = ['id', 'product', 'added_at']
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    total_price = serializers.SerializerMethodField() 
+    product = ProductSpecificDetailSerializer(read_only=True)
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'product', 'quantity', 'total_price']
+
+    def get_total_price(self, obj):
+        return obj.quantity * obj.product.price
+    
+    def create(self, validated_data):
+        request = self.context.get('request')
+        product_id = request.parser_context['kwargs'].get('pk') 
+        user = request.user
+        cart, created = Cart.objects.get_or_create(user=user)
+        product = ProductDetails.objects.get(id=product_id)
+        quantity = validated_data.get('quantity')
+
+        existing_cart_item = CartItem.objects.filter(cart=cart, product=product).first()
+
+        if existing_cart_item:
+            total_quantity = existing_cart_item.quantity + quantity
+        else:
+            total_quantity = quantity
+
+        if total_quantity > 20:
+                raise serializers.ValidationError("We're Sorry, Only 12 Units Allowed.")
+        
+        if existing_cart_item:
+            existing_cart_item.quantity = total_quantity
+            existing_cart_item.save()
+            return existing_cart_item
+        else:
+            cart_item = CartItem.objects.create(cart=cart, product=product, quantity=quantity)
+            return cart_item
