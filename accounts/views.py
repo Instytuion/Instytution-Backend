@@ -474,17 +474,7 @@ class WhishlistCreateView(generics.ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset().filter(user=self.request.user)
         serializer = self.get_serializer(queryset, many=True)
-        for index, wishlist_item in enumerate(serializer.data):
-            product = wishlist_item['product'] 
-            product_instance = Products.objects.get(id=product)
-            product_serializer = ProductSerializer(product_instance)
-
-            serializer.data[index]['product_details'] = product_serializer.data
-
-        data = {
-            'wishlists': serializer.data,
-        }
-        return Response(data)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

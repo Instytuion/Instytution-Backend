@@ -55,15 +55,41 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
-from store.models import Products
+from store.models import ProductDetails,Products
 
 class Whishlists(models.Model):
     user = models.ForeignKey(CustomUser,related_name='wishlist', on_delete=models.CASCADE)
-    product = models.ForeignKey(Products, related_name='wishlist_items', on_delete=models.CASCADE)
+    product = models.ForeignKey(ProductDetails, related_name='wishlist_items', on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.user.email} - {self.product.name}"
     
+class Cart(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="cart", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Cart of {self.user}"
+
+    def get_total_price(self):
+        total = sum(item.get_total_price() for item in self.items.all())
+        return total
+
+    def get_total_items(self):
+        return sum(item.quantity for item in self.items.all())
+    
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(ProductDetails, on_delete=models.CASCADE) 
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"
+
+    def get_total_price(self):
+        return self.quantity * self.product.price
+
+
 class Rating(models.Model):
     user = models.ForeignKey(CustomUser, related_name='ratings', on_delete=models.CASCADE)
     product = models.ForeignKey(Products,related_name="product_ratings",on_delete=models.CASCADE)
