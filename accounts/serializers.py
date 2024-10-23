@@ -153,8 +153,18 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
 
 from .models import Whishlists
-
+from store.serializers import ProductImagesSerializer
+from store.models import ProductDetails
+class ProductSpecificDetailSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name')
+    product_description = serializers.CharField(source='product.description') 
+    product_id = serializers.IntegerField(source='product.id')
+    product_images = ProductImagesSerializer(source='product.images', many=True)  
+    class Meta:
+        model = ProductDetails
+        fields = ['product_name', 'product_description', 'product_id', 'product_images','size','color','price','stock']
 class WishlistItemSerializer(serializers.ModelSerializer):
+    product = ProductSpecificDetailSerializer()
     class Meta:
         model = Whishlists
         fields = ['id', 'product', 'added_at']
