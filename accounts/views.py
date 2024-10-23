@@ -21,7 +21,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import generics
 from store.serializers import ProductSerializer
 from store.models import Products
-
+from .serializers import CartItemSerializer
 class CustomTokenRefreshView(TokenRefreshView):
     """
     Custom TokenRefreshView that checks for refresh_token in cookies.
@@ -491,3 +491,24 @@ class WhishlistDeleteView(generics.DestroyAPIView):
         instance = self.get_object()
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+
+    
+class CartItemListCreateView(generics.ListCreateAPIView):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned cart items to the logged-in user's cart.
+        """
+        return CartItem.objects.filter(cart__user=self.request.user)
+
+    
+class CartItemDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart__user=self.request.user)
