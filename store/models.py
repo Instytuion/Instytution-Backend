@@ -38,6 +38,6 @@ class ProductDetails(ModelTrackeBaseClass):
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def  __str__(self) -> str:
-        return f"{self.product.name} - {self.color}"
+        return f"{self.product.name} - {self.color} - {self.size}"
 
 

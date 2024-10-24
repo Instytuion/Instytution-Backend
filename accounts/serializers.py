@@ -160,11 +160,21 @@ class ProductSpecificDetailSerializer(serializers.ModelSerializer):
     product_images = ProductImagesSerializer(source='product.images', many=True)  
     class Meta:
         model = ProductDetails
-        fields = ['product_name', 'product_description', 'product_id', 'product_images','size','color','price','stock']
+        fields = [
+            'product_name',
+            'product_description',
+            'product_id',
+            'product_images',
+            'id',
+            'size',
+            'color',
+            'price',
+            'stock'
+        ]
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):
-    product = ProductSpecificDetailSerializer()
+    product = ProductSpecificDetailSerializer(read_only=True)
     class Meta:
         model = Whishlists
         fields = ['id', 'product', 'added_at']
