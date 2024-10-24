@@ -477,7 +477,20 @@ class WhishlistCreateView(generics.ListCreateAPIView):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        
+        product_id = self.kwargs.get('pk')
+        
+        try:
+            product = ProductDetails.objects.get(id=product_id)
+        except ProductDetails.DoesNotExist:
+            raise serializers.ValidationError({'error': 'Product not found.'})
+        
+        if Whishlists.objects.filter(user=self.request.user, product=product).exists():
+            raise serializers.ValidationError({'error': 'Product is already in your wishlist.'}) 
+
+
+        serializer.save(user=self.request.user, product=product)
+        
 class WhishlistDeleteView(generics.DestroyAPIView):
     """
     Delete a wishlist item for a user.

@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from store.filters import ProductFilter
 from rest_framework.serializers import ValidationError
+from rest_framework.exceptions import NotFound
 
 
 
@@ -39,3 +40,19 @@ class ProductsListCreateApiView(generics.ListCreateAPIView):
         else:
             return [AllowAny()]
     
+class ProductGetandUpdate(generics.RetrieveUpdateAPIView):
+    serializer_class = ProductSerializer
+    
+    def get_permissions(self):
+        if self.request.method == 'PATCH':
+            return [IsShopAdmin()]
+        else:
+            return [AllowAny()]
+        
+    def get_object(self):
+        try:
+            product = Products.objects.get(id=self.kwargs['pk'])
+        except Products.DoesNotExist:
+            raise NotFound(detail="Product not found", code=404)
+        
+        return product
