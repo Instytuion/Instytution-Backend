@@ -514,7 +514,7 @@ class CartItemListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         """
-        Optionally restricts the returned cart items to the logged-in user's cart.
+        Return the cart items 
         """
         return CartItem.objects.filter(cart__user=self.request.user)
 
