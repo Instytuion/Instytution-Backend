@@ -24,6 +24,7 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
         # Store user info for later use
         user = self.scope['user']
         self.role = user.role
+        self.email = user.email
 
         if 'jwt' in subprotocols:
             await self.accept(subprotocol='jwt')
@@ -161,6 +162,18 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
             return
         else:
             print('student disconnect called...')
+            data = {
+                    'user': self.email,
+                    'action': 'student-close',
+                }
+            instructor_channel_name = ClassRoomConsumer.opened_class_data[self.batch_name][1]
+            await self.channel_layer.send(
+                instructor_channel_name,
+                {
+                    'type': 'student.close',
+                    'data': data
+                }
+            )
             await self.channel_layer.group_discard(
                 self.batch_name,
                 self.channel_name
@@ -185,6 +198,12 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps(data))
             await self.close()
 
+    async def student_close(self, event):
+        print('student_close called...')
+        data = event['data']
+        await self.send(text_data=json.dumps(data))
+        print('student close action sent to instructor')
+
     async def send_sdp(self, event):
         print('inside send sdp')
         data = event['data']
@@ -199,39 +218,4 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
     def get_batch_instructor_email(self, url_batch_name):
         batch = Batch.objects.select_related('instructor').get(name=url_batch_name)
         return batch.instructor.email
-        
-
-
-
-    # async def receive(self, text_data=None):
-    #     print('inside recieve')
-    #     recieved_dict = json.loads(text_data)
-    #     action = recieved_dict['action']
-
-    #     if (action == 'new-offer') or (action == 'new-answer'):
-    #         receiver_channel_name = recieved_dict['message']['receiver_channel_name']
-    #         recieved_dict['message']['receiver_channel_name'] = self.channel_name
-    #         await self.channel_layer.send(
-    #             receiver_channel_name,
-    #             {
-    #                 'type': 'send.sdp',
-    #                 'recieved_dict': recieved_dict
-    #             }
-    #         )
-    #         return
-
-    #     recieved_dict['message']['receiver_channel_name'] = self.channel_name
-    #     await self.channel_layer.group_send(
-    #         self.room_group_name,
-    #         {
-    #             'type': 'send.sdp',
-    #             'recieved_dict': recieved_dict
-    #         }
-    #     )
-
-    # async def send_sdp(self, event):
-    #     print('inside send sdp')
-    #     recieved_dict = event['recieved_dict']
-
-    #     await self.send(text_data=json.dumps(recieved_dict))
     
