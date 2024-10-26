@@ -200,9 +200,8 @@ class CartItemSerializer(serializers.ModelSerializer):
         quantity = validated_data.get('quantity')
 
         existing_cart_item = CartItem.objects.filter(cart=cart, product=product).first()
-
         if existing_cart_item:
-            total_quantity = existing_cart_item.quantity + quantity
+            total_quantity = quantity 
         else:
             total_quantity = quantity
 
