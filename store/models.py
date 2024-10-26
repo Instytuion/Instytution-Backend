@@ -37,6 +37,11 @@ class ProductDetails(ModelTrackeBaseClass):
     stock = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['product', 'size', 'color'], name='unique_product_detail')
+        ]
+
     def  __str__(self) -> str:
         return f"{self.product.name} - {self.color} - {self.size}"
 
