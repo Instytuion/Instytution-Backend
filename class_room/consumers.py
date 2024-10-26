@@ -7,6 +7,7 @@ from channels.db import database_sync_to_async
 class ClassRoomConsumer(AsyncWebsocketConsumer):
     # This 'opened_class_data' will hold neccessary data needed track an opened class.
     opened_class_data = dict()
+    active_students_list = []
     async def connect(self):
         print('inside connect consumer')
         subprotocols = self.scope.get('subprotocols', [])
@@ -50,6 +51,12 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                 return
             else:
                 print('student fount to join the class...' )
+                if user_email  in ClassRoomConsumer.active_students_list:
+                    print('duplicate student found...')
+                    await self.send(text_data=json.dumps({'message': 'Duplicate student'}))
+                    ClassRoomConsumer.active_students_list.append(user_email)
+                    await self.close()
+                    return
                 if batch_name not in ClassRoomConsumer.opened_class_data:
                     print('No room condition called...')
                     await self.send(text_data=json.dumps({'message': f'Class room not opened yet. Disconnecting...'}))
@@ -83,6 +90,7 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
 
         if message == 'student_allowed':
             print('message_allowed is true')
+            student_email = recieved_data['student_email']
             student_channel_name = recieved_data['student_channel_name']
             data = {'message': 'Permission granted to join class'}
             await self.channel_layer.send(
@@ -92,6 +100,7 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                     'data': data
                 }
             )
+            ClassRoomConsumer.active_students_list.append(student_email)
             return
 
         if message == 'student_dissallowed':
@@ -141,6 +150,17 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
             return
+        if action == 'student-removed':
+            print('inside student-removed...')
+            student_channel_name = recieved_data.pop('student_channel_name')
+            await self.channel_layer.send(
+                student_channel_name,
+                {
+                    'type': 'student.removed',
+                    'data': recieved_data
+                }
+            )
+            return
 
     
     async def disconnect(self, code):
@@ -162,22 +182,29 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
             return
         else:
             print('student disconnect called...')
+            email = self.email
             data = {
-                    'user': self.email,
+                    'user': email,
                     'action': 'student-close',
                 }
-            instructor_channel_name = ClassRoomConsumer.opened_class_data[self.batch_name][1]
-            await self.channel_layer.send(
-                instructor_channel_name,
-                {
-                    'type': 'student.close',
-                    'data': data
-                }
-            )
-            await self.channel_layer.group_discard(
-                self.batch_name,
-                self.channel_name
-            )
+            instructor_channel_name = None
+            if self.batch_name in ClassRoomConsumer.opened_class_data:
+                instructor_channel_name = ClassRoomConsumer.opened_class_data[self.batch_name][1]
+            if  ClassRoomConsumer.active_students_list.count(email) == 1:
+                if instructor_channel_name:
+                    await self.channel_layer.send(
+                        instructor_channel_name,
+                        {
+                            'type': 'student.close',
+                            'data': data
+                        }
+                    )
+                await self.channel_layer.group_discard(
+                    self.batch_name,
+                    self.channel_name
+                )
+            if email in ClassRoomConsumer.active_students_list:
+                ClassRoomConsumer.active_students_list.remove(email)
             return
 
     async def student_request(self, event):
@@ -203,6 +230,13 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
         data = event['data']
         await self.send(text_data=json.dumps(data))
         print('student close action sent to instructor')
+
+    async def student_removed(self, event):
+        print('student_removed called...')
+        data = event['data']
+        await self.send(text_data=json.dumps(data))
+        print('student-removed action sent to student.')
+        await self.close()
 
     async def send_sdp(self, event):
         print('inside send sdp')

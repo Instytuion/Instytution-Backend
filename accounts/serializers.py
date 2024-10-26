@@ -204,7 +204,8 @@ class CartItemSerializer(serializers.ModelSerializer):
             total_quantity = quantity 
         else:
             total_quantity = quantity
-        if total_quantity > 20:
+
+        if total_quantity > 12:
                 raise serializers.ValidationError("We're Sorry, Only 12 Units Allowed.")
         
         if existing_cart_item:
