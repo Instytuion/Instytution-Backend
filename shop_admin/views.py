@@ -29,10 +29,7 @@ class ProductsListCreateApiView(generics.ListCreateAPIView):
         
         return filtered_qs.distinct() 
         
-        if not queryset.exists():
-            raise ValidationError({"error": f"Category '{category_name}' does not exist or has no products."})
         
-        return queryset
     
     def get_permissions(self):
         if self.request.method == 'POST':

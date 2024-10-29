@@ -154,6 +154,8 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
 
 class ProductSpecificDetailSerializer(serializers.ModelSerializer):
+    average_rating = serializers.ReadOnlyField(source='product.average_rating')
+    rating_count   = serializers.ReadOnlyField(source='product.rating_count')
     product_name = serializers.CharField(source='product.name')
     product_description = serializers.CharField(source='product.description') 
     product_id = serializers.IntegerField(source='product.id')
@@ -169,7 +171,10 @@ class ProductSpecificDetailSerializer(serializers.ModelSerializer):
             'size',
             'color',
             'price',
-            'stock'
+            'stock',
+            'average_rating',
+            'rating_count',
+            
         ]
 
 
@@ -215,3 +220,6 @@ class CartItemSerializer(serializers.ModelSerializer):
         else:
             cart_item = CartItem.objects.create(cart=cart, product=product, quantity=quantity)
             return cart_item
+        
+
+
