@@ -1,6 +1,7 @@
-# from django.urls import path
-# from .views import *
+from django.urls import path
+from .views import *
 
-# urlpatterns = [
-#     path('test/',test_class_room , name='test_class_room'),
-# ]
+urlpatterns = [
+    path('video-chunks/<str:batch_name>/<int:chunk_serial>/',ReceiveVideoChunks.as_view() , name='video_chunks'),
+    path('bind-video-chunks/<str:batch_name>/<str:batch_date>/',BindVideoChunks.as_view() , name='bind_video_chunks'),
+]
