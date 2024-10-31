@@ -5,6 +5,7 @@ from .manager import CustomUserManager
 from cloudinary.models import CloudinaryField
 from rest_framework_simplejwt.tokens import RefreshToken
 from store.models import ProductDetails,Products
+from django.core.validators import MinValueValidator, MaxValueValidator 
 
 
 
@@ -90,9 +91,29 @@ class CartItem(models.Model):
         return self.quantity * self.product.price
 
 
+
+
 class Rating(models.Model):
-    user = models.ForeignKey(CustomUser, related_name='ratings', on_delete=models.CASCADE)
-    product = models.ForeignKey(Products,related_name="product_ratings",on_delete=models.CASCADE)
-    rating = models.IntegerField()
+    product = models.ForeignKey(Products, related_name='ratings', on_delete=models.CASCADE)
+    user  = models.ForeignKey(CustomUser, related_name='ratings', on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5)
+        ]
+    )
     feedback = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('product', 'user')
+
+    def __str__(self):
+        return f"{self.user.email} rated {self.product.name} - {self.rating}"
+
+class RatingImage(models.Model):
+    rating = models.ForeignKey(Rating, related_name='rating_images', on_delete=models.CASCADE)
+    image = CloudinaryField('image', blank=True, null=True, folder='ratings/')
+    
+    def __str__(self):
+        return f"Image for rating {self.rating.id}"
