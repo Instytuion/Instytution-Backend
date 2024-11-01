@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'instructor',
     'store',
     'shop_admin',
+    'order',
     
     #third party
     'rest_framework',
