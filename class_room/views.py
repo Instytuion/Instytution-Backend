@@ -43,33 +43,7 @@ class ReceiveVideoChunks(APIView):
             print('serializer invalid...',serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    # def delete(self, request, batch_name, batch_date, *args, **kwargs):
-    #     print(f"Deleting video chunks for batch: {batch_name} on date: {batch_date}")
 
-    #     try:
-    #         date_obj = parse_date(batch_date)
-    #     except ValueError:
-    #         return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     try:
-    #         batch = Batch.objects.get(name=batch_name)
-    #     except Batch.DoesNotExist:
-    #         return Response({"error": "Batch not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    #     video_chunks = VideoChunks.objects.filter(batch=batch, uploaded_at=date_obj)
-
-    #     if not video_chunks.exists():
-    #         return Response({"status": "No video chunks found for the specified batch and date."}, status=status.HTTP_404_NOT_FOUND)
-
-    #     try:
-    #         for chunk in video_chunks:
-    #             chunk.delete()
-    #         print('video chunks deleted successfully')
-    #     except Exception as e:
-    #         print('Error while deleteing video chunks -', str(e))
-    #         return Response({"error": "Failed to delete video chunks", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    #     return Response({"status": "Video chunks deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 class BindVideoChunks(APIView):
     ''' To bind video chunks and save to DB and delete all small chunks from local storage. '''
@@ -136,3 +110,14 @@ class BindVideoChunks(APIView):
             return Response({"error": "Failed to delete video chunks", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"status": f'session_video_{batch_name}_{batch_date}.webm created successfully.'}, status=status.HTTP_201_CREATED)
+from .serializers import SessionSerializer
+
+class SessionVideosListView(APIView):
+    ''' To get session video details by serial. '''
+    def get(self, request, batch_name, *args, **kwargs): 
+        print('Get session video details called...',batch_name)
+        print('Session video details', request.data)
+        data = SessionVideos.objects.filter(batch__name=batch_name)
+        print('data is  from session video',data)
+        serializer = SessionSerializer(data, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
