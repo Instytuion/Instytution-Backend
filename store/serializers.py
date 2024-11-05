@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 
 class ProductSubCategorySerializer(serializers.ModelSerializer):
-    category_name =  serializers.CharField(source='category.name', read_only=True)
+    category_name =  serializers.CharField(source='category.name', required=False)
 
     class Meta:
         model = ProductSubCategories
@@ -13,13 +13,57 @@ class ProductSubCategorySerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'name': {'required': True}  
         }
+        
+    def create(self, validated_data):
+        request = self.context.get('request')
+        category_name = validated_data.pop('category', {}).get('name')
+        
+        if not category_name:
+            raise  ValidationError({'category_name': 'Category name is required.'})
+
+        
+        try:
+            category = ProductCategories.objects.get(name=category_name)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError(f"Category '{category_name}' does not exist.")
+        
+        validated_data['category'] = category
+        validated_data['created_by'] = request.user 
+        validated_data['updated_by'] = request.user 
+        
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        category_name = validated_data.pop('category', {}).get('name')
+        if category_name:
+            try:
+                category = ProductCategories.objects.get(name=category_name)
+            except ObjectDoesNotExist:
+                raise serializers.ValidationError(f"Category '{category_name}' does not exist.")
+            instance.category = category
+            instance.updated_by = request.user
+        return super().update(instance, validated_data)
 
 class ProductImagesSerializer(serializers.ModelSerializer):
     image =  serializers.ImageField(use_url=True,)
     
     class Meta:
         model = ProductImages
-        fields = ['image', 'color']
+        fields = [ 'id','image', 'color']
+        
+    def create(self, validated_data):
+        request = self.context.get('request')
+        product_id = request.parser_context['kwargs'].get('pk') 
+        
+        try:
+            product = Products.objects.get(id=product_id)
+        except ObjectDoesNotExist:
+             raise serializers.ValidationError(f"Product with id {product_id} does not exist.")
+        validated_data['product'] = product
+        validated_data['created_by'] = request.user
+        validated_data['updated_by'] = request.user
+        return super().create(validated_data)
 
 class ProductDetailsSerializer(serializers.ModelSerializer):
     
@@ -97,6 +141,7 @@ class ProductSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         request = self.context.get('request')
+        print('request.data...........',request.data)
 
         sub_category_data = validated_data.pop('sub_category', None)
         if sub_category_data:

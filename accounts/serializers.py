@@ -7,6 +7,7 @@ from accounts import constants
 from django.conf import settings
 from store.serializers import ProductImagesSerializer
 from store.models import ProductDetails
+from django.db import IntegrityError
 
 class UserSerializer(serializers.ModelSerializer):
     email         = serializers.EmailField(required=True)
@@ -154,10 +155,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True, required=True)
 
 class ProductSpecificDetailSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source='product.name')
-    product_description = serializers.CharField(source='product.description') 
-    product_id = serializers.IntegerField(source='product.id')
-    product_images = ProductImagesSerializer(source='product.images', many=True)  
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_description = serializers.CharField(source='product.description',read_only=True) 
+    product_id = serializers.IntegerField(source='product.id', read_only=True)
+    product_images = ProductImagesSerializer(source='product.images', many=True, read_only=True)  
     class Meta:
         model = ProductDetails
         fields = [
@@ -171,7 +172,50 @@ class ProductSpecificDetailSerializer(serializers.ModelSerializer):
             'price',
             'stock'
         ]
+        
+    def create(self, validated_data):
+        request = self.context.get('request')
+        product_id = request.parser_context['kwargs'].get('pk') 
+        
+        try:
+            product = Products.objects.get(id=product_id)
+        except Products.DoesNotExist:
+            raise serializers.ValidationError({
+                "product_id": "Invalid product ID. Product does not exist."
+            })
+        
+        validated_data['created_by'] = request.user
+        validated_data['updated_by'] = request.user
 
+        try:
+            product_details = ProductDetails.objects.create(product=product, **validated_data)
+        except IntegrityError:
+            raise serializers.ValidationError({
+                "detail": "This product detail already exists with the specified size and color."
+            })
+        
+        return product_details
+    
+    def update(self, instance, validated_data):
+        print('entered in update method')
+        request = self.context.get('request')
+        print('request.data', request.data)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.updated_by = request.user
+        
+        try:
+            instance.save()
+        except IntegrityError:
+            raise serializers.ValidationError({
+                "detail": "This product detail already exists with the specified size and color."
+            })
+    
+        return instance
+
+
+        
 
 class WishlistItemSerializer(serializers.ModelSerializer):
     product = ProductSpecificDetailSerializer(read_only=True)
@@ -193,7 +237,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         request = self.context.get('request')
-        product_id = request.parser_context['kwargs'].get('pk') 
+        product_id = request.parser_context['kwargs'].get('pk')  
         user = request.user
         cart, created = Cart.objects.get_or_create(user=user)
         product = ProductDetails.objects.get(id=product_id)

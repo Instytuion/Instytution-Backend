@@ -1,6 +1,7 @@
 from courses.models import *
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
+from accounts.models import CustomUser
 
 
 class CourseSerializer(serializers.ModelSerializer):
