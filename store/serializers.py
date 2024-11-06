@@ -3,6 +3,8 @@ from .models import Products, ProductImages, ProductDetails, ProductCategories, 
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
+from accounts.models import RatingImage,Rating
+
 
 class ProductSubCategorySerializer(serializers.ModelSerializer):
     category_name =  serializers.CharField(source='category.name', required=False)
@@ -66,22 +68,40 @@ class ProductImagesSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class ProductDetailsSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = ProductDetails
         fields = [
-            'id', 'size', 'price', 'color', 'stock', 'price'
+            'id', 'size', 'price', 'color', 'stock', 'price',
         ]
+
+
+class RatingImageSerializer(serializers.ModelSerializer):
+    image =  serializers.ImageField(use_url=True,)
+    class Meta:
+        model = RatingImage
+        fields = ['id', 'image']
+
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    rating_images = RatingImageSerializer(many=True, read_only=True)  
+
+    class Meta:
+        model = Rating
+        fields = ['id', 'product', 'user', 'rating', 'feedback', 'created_at', 'rating_images']
 
 class ProductSerializer(serializers.ModelSerializer):
     sub_category = ProductSubCategorySerializer()  
     details = ProductDetailsSerializer(many=True)
-    images = ProductImagesSerializer(many=True,)    
-
+    images = ProductImagesSerializer(many=True,) 
+    ratings = RatingSerializer(many=True, read_only=True)   
+    average_rating = serializers.FloatField( read_only=True)
+    rating_count = serializers.IntegerField( read_only=True)
     class Meta:
         model = Products
         fields = [
-            'id', 'name', 'sub_category', 'description', 'is_active', 'details', 'images'
+            'id', 'name', 'sub_category', 'description', 'is_active', 'details', 'images', 'ratings','average_rating', 'rating_count',
         ]
 
     def create(self, validated_data): 
@@ -160,3 +180,4 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.save()
         
         return instance
+

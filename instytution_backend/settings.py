@@ -29,10 +29,13 @@ SECRET_KEY = config('DJ_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+#DEBUG = config('debug_status', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1',
+    '13.60.111.177',
+    'api.instytution.live',
 ]
 
 
@@ -81,9 +84,10 @@ MIDDLEWARE = [
 ]
 
 
-#CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'https://instytution.live',
+    'https://www.instytution.live',
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -171,6 +175,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
