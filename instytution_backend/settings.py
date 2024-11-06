@@ -190,14 +190,15 @@ FRONTEND_URL = 'localhost:5173'
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),  
     'API_KEY': config('CLOUDINARY_API_KEY'),  
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),  
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+    'SECURE' : config('http_secure', default=True, cast=bool),
 }
 
 cloudinary.config(
     cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
     api_key=CLOUDINARY_STORAGE['API_KEY'],
     api_secret=CLOUDINARY_STORAGE['API_SECRET'],
-    secure=config('debug_status', default=True, cast=bool),  # Toggle HTTP/HTTPS URLs
+    secure=CLOUDINARY_STORAGE['SECURE'],  # Toggle HTTP/HTTPS URLs
 )
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
