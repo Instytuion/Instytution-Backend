@@ -72,7 +72,9 @@ class BindVideoChunks(APIView):
         try:
             # FFmpeg to concatenate videos
             print("Starting video concatenation...")
-            ffmpeg.input('concat:' + '|'.join(input_files)).output(output_path).run()
+            ffmpeg.input('concat:' + '|'.join(input_files)) \
+            .output(output_path, vcodec='libvpx-vp9', acodec='libopus', threads=1, crf=28, audio_bitrate='64k') \
+            .run()
         except Exception as e:
             print(f"FFmpeg concatenation failed: {str(e)}")
             return Response({"error": f"Failed to concatenate video chunks: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
