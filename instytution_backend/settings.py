@@ -27,9 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('DJ_SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-#DEBUG = config('debug_status', default=False, cast=bool)
+DEBUG = config('debug_status', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     'localhost', 
@@ -199,6 +197,7 @@ cloudinary.config(
     cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
     api_key=CLOUDINARY_STORAGE['API_KEY'],
     api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+    secure=config('debug_status', default=True, cast=bool),  # Toggle HTTP/HTTPS URLs
 )
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
