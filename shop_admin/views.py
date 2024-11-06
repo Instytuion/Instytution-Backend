@@ -14,6 +14,7 @@ from .utils import restructure_product_creation_data
 from  rest_framework import status
 from rest_framework.response import Response
 from custom_admin.pagination import StandardResultsSetPagination
+import cloudinary.uploader
 
 
 
@@ -119,6 +120,14 @@ class ProductImageRetriveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView)
     
     def get_queryset(self):
         return ProductImages.objects.filter(id=self.kwargs['pk'])
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        public_id = instance.image.public_id  
+        cloudinary.uploader.destroy(public_id)
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
 class ProductImagesListCreateView(generics.ListCreateAPIView):
     permission_classes =  [IsShopAdmin]
