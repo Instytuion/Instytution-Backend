@@ -10,8 +10,10 @@ class ProductCategories(ModelTrackeBaseClass):
         return self.name
         
 class ProductSubCategories(ModelTrackeBaseClass):
-    name = models.CharField(max_length=50)
+    
+    name = models.CharField(max_length=50,)
     category =  models.ForeignKey(ProductCategories, on_delete=models.CASCADE, related_name='subcategories')
+    
 
     def __str__(self) -> str:
         return self.name
