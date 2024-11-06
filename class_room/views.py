@@ -110,8 +110,8 @@ class BindVideoChunks(APIView):
             return Response({"error": "Failed to delete video chunks", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"status": f'session_video_{batch_name}_{batch_date}.webm created successfully.'}, status=status.HTTP_201_CREATED)
+    
 from .serializers import SessionSerializer
-
 class SessionVideosListView(APIView):
     ''' To get session video details by serial. '''
     def get(self, request, batch_name, *args, **kwargs): 
@@ -121,3 +121,17 @@ class SessionVideosListView(APIView):
         print('data is  from session video',data)
         serializer = SessionSerializer(data, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class VideoBindingStatus(APIView):
+    ''' To get status of video chunks binding to update frontend. '''
+    def get(self, request, batch_name, batch_date, *args, **kwargs):
+        date_obj = parse_date(batch_date)
+        try:
+            batch = Batch.objects.get(name=batch_name)
+        except Batch.DoesNotExist:
+            print("Batch not found inside VideoBindingStatus view...")
+            return Response({"status": "Batch not found."}, status=status.HTTP_404_NOT_FOUND)
+        if not VideoChunks.objects.filter(batch=batch, uploaded_at=date_obj).exists():
+            return Response({"status": 'completed'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"status": 'processing'}, status=status.HTTP_200_OK)
