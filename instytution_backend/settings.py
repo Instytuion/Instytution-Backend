@@ -88,6 +88,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'https://instytution.live',
     'https://www.instytution.live',
+    'https://api.instytution.live',
 ]
 CORS_ALLOW_CREDENTIALS = True
 
