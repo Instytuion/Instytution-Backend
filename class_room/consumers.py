@@ -3,11 +3,9 @@ import json
 from django.contrib.auth.models import AnonymousUser
 from courses.models import Batch
 from channels.db import database_sync_to_async
+from django.core.cache import cache
 
 class ClassRoomConsumer(AsyncWebsocketConsumer):
-    # This 'opened_class_data' will hold neccessary data needed track an opened class.
-    opened_class_data = dict()
-    active_students_list = []
     async def connect(self):
         print('inside connect consumer')
         subprotocols = self.scope.get('subprotocols', [])
@@ -39,25 +37,27 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
             user_email = user.email
             if user_email == batch_instructor_email:
                 print('instructor as admin found to open class room...' )
-                if batch_name in ClassRoomConsumer.opened_class_data:
+                if cache.get(f"opened_class_data:{batch_name}"):
                     print('Class already opened. Disconnecting...')
                     await self.send(text_data=json.dumps({'message': 'Class already opened. Disconnecting...'}))
                     await self.close()
                     return
-                ClassRoomConsumer.opened_class_data[batch_name] = [user_email, self.channel_name]
+                cache.set(f"opened_class_data:{batch_name}", json.dumps([user_email, self.channel_name]), timeout=14400)
                 self.admin = True
                 await self.channel_layer.group_add(self.batch_name,self.channel_name)
                 await self.send(text_data=json.dumps({'message': f'Class room opened.'}))
                 return
             else:
                 print('student fount to join the class...' )
-                if user_email  in ClassRoomConsumer.active_students_list:
+                active_students_list = json.loads(cache.get("active_students_list", "[]"))
+                if user_email  in active_students_list:
                     print('duplicate student found...')
                     await self.send(text_data=json.dumps({'message': 'Duplicate student'}))
-                    ClassRoomConsumer.active_students_list.append(user_email)
+                    active_students_list.append(user_email)
+                    cache.set("active_students_list", json.dumps(active_students_list))
                     await self.close()
                     return
-                if batch_name not in ClassRoomConsumer.opened_class_data:
+                if not cache.get(f"opened_class_data:{batch_name}"):
                     print('No room condition called...')
                     await self.send(text_data=json.dumps({'message': f'Class room not opened yet. Disconnecting...'}))
                     await self.close()
@@ -69,7 +69,7 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                     'action': 'new-peer',
                     'student_channel_name': self.channel_name
                 }
-                instructor_channel_name = ClassRoomConsumer.opened_class_data[self.batch_name][1]
+                instructor_channel_name = json.loads(cache.get(f"opened_class_data:{batch_name}"))[1]
                 await self.channel_layer.send(
                     instructor_channel_name,
                     {
@@ -100,7 +100,9 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                     'data': data
                 }
             )
-            ClassRoomConsumer.active_students_list.append(student_email)
+            active_students_list = json.loads(cache.get("active_students_list", "[]"))
+            active_students_list.append(student_email)
+            cache.set("active_students_list", json.dumps(active_students_list))
             return
 
         if message == 'student_dissallowed':
@@ -176,9 +178,8 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
             await self.channel_layer.group_discard(self.batch_name,self.channel_name)
-            if self.batch_name in ClassRoomConsumer.opened_class_data:
-                del ClassRoomConsumer.opened_class_data[self.batch_name]
-                print('batch removed from open class dict - ', ClassRoomConsumer.opened_class_data)
+            cache.delete(f"opened_class_data:{self.batch_name}")
+            print(f'batch- {self.batch_name} removed from cache - ')
             return
         else:
             print('student disconnect called...')
@@ -187,10 +188,11 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                     'user': email,
                     'action': 'student-close',
                 }
+            active_students_list = json.loads(cache.get("active_students_list", "[]"))
             instructor_channel_name = None
-            if self.batch_name in ClassRoomConsumer.opened_class_data:
-                instructor_channel_name = ClassRoomConsumer.opened_class_data[self.batch_name][1]
-            if  ClassRoomConsumer.active_students_list.count(email) == 1:
+            if cache.get(f"opened_class_data:{self.batch_name}"):
+                instructor_channel_name = json.loads(cache.get(f"opened_class_data:{self.batch_name}"))[1]
+            if  active_students_list.count(email) == 1:
                 if instructor_channel_name:
                     await self.channel_layer.send(
                         instructor_channel_name,
@@ -203,8 +205,8 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                     self.batch_name,
                     self.channel_name
                 )
-            if email in ClassRoomConsumer.active_students_list:
-                ClassRoomConsumer.active_students_list.remove(email)
+            if email in active_students_list:
+                active_students_list.remove(email)
             return
 
     async def student_request(self, event):
