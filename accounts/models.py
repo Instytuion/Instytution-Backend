@@ -6,7 +6,7 @@ from cloudinary.models import CloudinaryField
 from rest_framework_simplejwt.tokens import RefreshToken
 from store.models import ProductDetails,Products
 from django.core.validators import MinValueValidator, MaxValueValidator 
-
+from django.core.exceptions import ValidationError
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -117,3 +117,30 @@ class RatingImage(models.Model):
     
     def __str__(self):
         return f"Image for rating {self.rating.id}"
+
+
+class UserAddresses(models.Model):
+    '''
+    Address of each customer and guest will be saves here. name and phone_number 
+    will be a unique combination for each customer.
+    '''
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, blank=False, null=False)
+    house_name = models.CharField(max_length=100, blank=False, null=False)
+    street_name_1 = models.CharField(max_length=100, blank=False, null=False)
+    street_name_2 = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=False, null=False)
+    state = models.CharField(max_length=100, blank=False, null=False)
+    pincode = models.CharField(max_length=10, blank=False, null=False)
+    phone_number = models.CharField(max_length=13)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        # unique_together = ('user', 'pincode', 'phone_number')
+        
+        indexes = [
+            models.Index(fields=['user', 'pincode', 'phone_number']),
+        ]
+
+    def __str__(self):
+        return f"{self.user}, {self.name}, {self.house_name}"   

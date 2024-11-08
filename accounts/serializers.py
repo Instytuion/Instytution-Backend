@@ -267,4 +267,67 @@ class CartItemSerializer(serializers.ModelSerializer):
             return cart_item
         
 
+class AddressSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.email')  # Assuming user has an email field
 
+    class Meta:
+        model = UserAddresses
+        fields = [
+            'id',
+            'user',
+            'name',
+            'house_name',
+            'street_name_1',
+            'street_name_2',
+            'city',
+            'state',
+            'pincode',
+            'phone_number',
+            'is_active'
+        ]
+    def validate(self, data):
+        """
+        Custom validation for checking if an address with the same pincode and phone number already exists.
+        """
+        user = self.context['request'].user  
+        print('user is %s' % user)
+        pincode = data.get('pincode')
+        phone_number = data.get('phone_number')
+
+        if UserAddresses.objects.filter(user=user).count() >= 3:
+            raise serializers.ValidationError("You can only have up to 3 addresses.")
+
+        instance = self.instance
+        if instance:
+            existing_addresses = UserAddresses.objects.filter(
+                pincode=pincode,
+                phone_number=phone_number,
+                user=user
+            ).exclude(pk=instance.pk)  
+        else:
+            existing_addresses = UserAddresses.objects.filter(
+                pincode=pincode,
+                phone_number=phone_number,
+                user=user
+            )
+
+        if existing_addresses.exists():
+            raise serializers.ValidationError("An address with this pincode and phone number already exists for this customer.")
+
+        return data
+
+    def create(self, validated_data):
+        """
+        Handle the creation of a new Address instance.
+        """
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Handle the update of an existing Address instance.
+        Only fields in validated_data are updated.
+        """
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        instance.save()
+        return instance

@@ -525,3 +525,39 @@ class CartItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return CartItem.objects.filter(cart__user=self.request.user)
+
+
+class AddressViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows addresses to be created, retrieved, updated, or deleted.
+    Only authenticated users can access this endpoint.
+    """
+    serializer_class = AddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Override the get_queryset method to filter addresses for the authenticated user.
+        """
+        print('User Friom rq: ', self.request.user)
+        data = UserAddresses.objects.all()
+        print('data is :L',data)
+        return UserAddresses.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        """
+        Save the address instance with the authenticated user as its owner.
+        """
+        serializer.save(user=self.request.user)
+        
+    def update(self, request, *args, **kwargs):
+        """
+        Override the update method to allow partial updates.
+        """
+        partial = kwargs.pop('partial', False)  
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
