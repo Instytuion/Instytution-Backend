@@ -119,8 +119,7 @@ class RatingImage(models.Model):
         return f"Image for rating {self.rating.id}"
 
 
-
-class Address(models.Model):
+class UserAddresses(models.Model):
     '''
     Address of each customer and guest will be saves here. name and phone_number 
     will be a unique combination for each customer.
@@ -136,16 +135,12 @@ class Address(models.Model):
     phone_number = models.CharField(max_length=13)
     is_active = models.BooleanField(default=True)
 
-    def clean(self):
-        # Ensure that the combination of pincode, phone_number, and customer_id is unique
-        existing_addresses = Address.objects.filter(
-            pincode=self.pincode,
-            phone_number=self.phone_number,
-            customer_id=self.customer_id
-        ).exclude(is_active=False).exclude(pk=self.pk)  
-        if existing_addresses.exists():
-            raise ValidationError("An address with this pincode, phone number already exists for this customer.")
-        super().clean()
+    class Meta:
+        # unique_together = ('user', 'pincode', 'phone_number')
+        
+        indexes = [
+            models.Index(fields=['user', 'pincode', 'phone_number']),
+        ]
 
     def __str__(self):
-        return f"{self.customer_id}, {self.name}, {self.house_name}"
+        return f"{self.user}, {self.name}, {self.house_name}"   

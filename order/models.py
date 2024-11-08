@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import CustomUser,ProductDetails
+from accounts.models import *
 from django.utils import timezone
 import uuid
 from decimal import Decimal
@@ -16,6 +16,7 @@ class Order(models.Model):
     ]
     
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    address = models.ForeignKey(UserAddresses, on_delete=models.CASCADE) 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     expected_delivery = models.DateTimeField(blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -44,7 +45,7 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order {self.id} by {self.user.username}"
+        return f"Order {self.id} by {self.user.email}"
 
 
 class OrderItem(models.Model):
@@ -55,4 +56,4 @@ class OrderItem(models.Model):
     sub_order_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
-        return f"{self.quantity} x {self.product.name} in {self.order}"
+        return f"{self.quantity} x {self.product.product.name} in {self.order}"

@@ -27,16 +27,21 @@ class CoursePayment(models.Model):
 
 class ProductPayment(models.Model):
     STATUS_CHOICES = [
-        ('initiated', 'Initiated'),
+        ('pending', 'Pending'),
         ('successful', 'Successful'),
         ('failed', 'Failed'),
+        ('returned', 'Returned'),
+    ]
+    PAYMENT_METHOD = [
+        ('razorpay', 'RazorPay'),
+        ('cod', 'Cash On Delivery'),
     ]
 
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="payment")
-    payment_order_id = models.CharField(max_length=100, unique=True)
+    payment_order_id = models.CharField(max_length=100, unique=True, null=True)
     payment_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='initiated')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=50)
+    payment_method = models.CharField(max_length=50,choices=PAYMENT_METHOD, default='razorpay')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
