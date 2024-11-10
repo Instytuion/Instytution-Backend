@@ -34,3 +34,17 @@ class RatingAdmin(admin.ModelAdmin):
 @admin.register(RatingImage)
 class RatingImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'rating', 'image')
+@admin.register(UserAddresses)
+class AddressAdmin(admin.ModelAdmin):
+    # Fields to be displayed in the list view
+    list_display = ('user', 'name', 'phone_number', 'city', 'state', 'pincode', 'is_active')
+    
+    # Search functionality
+    search_fields = ['user__email', 'phone_number', 'house_name', 'city', 'state', 'pincode']
+    
+    # Filtering options in the admin panel
+    list_filter = ('is_active', 'state', 'city')
+    
+    # Fields to display for the form when adding or editing an address
+    fields = ('user', 'name', 'house_name', 'street_name_1', 'street_name_2', 'city', 'state', 'pincode', 'phone_number', 'is_active')
+    

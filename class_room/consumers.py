@@ -207,6 +207,7 @@ class ClassRoomConsumer(AsyncWebsocketConsumer):
                 )
             if email in active_students_list:
                 active_students_list.remove(email)
+                cache.set("active_students_list", json.dumps(active_students_list))
             return
 
     async def student_request(self, event):
