@@ -157,10 +157,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class ProductSpecificDetailSerializer(serializers.ModelSerializer):
     average_rating = serializers.ReadOnlyField(source='product.average_rating')
     rating_count   = serializers.ReadOnlyField(source='product.rating_count')
-    product_name = serializers.CharField(source='product.name')
-    product_description = serializers.CharField(source='product.description') 
-    product_id = serializers.IntegerField(source='product.id')
-    product_images = ProductImagesSerializer(source='product.images', many=True)  
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_description = serializers.CharField(source='product.description', read_only=True) 
+    product_id = serializers.IntegerField(source='product.id', read_only=True)
+    product_images = ProductImagesSerializer(source='product.images', many=True, read_only=True)  
     
     class Meta:
         model = ProductDetails
