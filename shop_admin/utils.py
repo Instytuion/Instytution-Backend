@@ -34,7 +34,7 @@ def restructure_product_creation_data(data):
 
             # Ensure the list is large enough to hold the current index
             while len(product_data['details']) <= detail_index:
-                product_data['details'].append({'color': '', 'price': 0, 'stock': 0, 'size': ''})
+                product_data['details'].append({'color': '', 'price': 0, 'stock': 0, 'size': None})
 
             # Update the correct attribute for this detail entry
             if detail_field == 'color':
@@ -44,6 +44,6 @@ def restructure_product_creation_data(data):
             elif detail_field == 'stock':
                 product_data['details'][detail_index]['stock'] = int(value[0])
             elif detail_field == 'size':
-                product_data['details'][detail_index]['size'] = value[0]
+                product_data['details'][detail_index]['size'] = None if value[0] in ["null", ""] else value[0]
 
     return product_data
