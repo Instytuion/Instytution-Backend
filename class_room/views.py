@@ -12,7 +12,7 @@ from .tasks import video_binding_process
 class ReceiveVideoChunks(APIView):
     ''' To stoere video chunks to DB temporarly to bind all together later. '''
 
-    def post(self, request, batch_name, chunk_serial, *args, **kwargs):
+    def post(self, request, batch_name, chunk_serial, record_id, *args, **kwargs):
         print('Storing video chunk called...')
         video_file = request.FILES.get('video_chunk')
         try:
@@ -24,15 +24,15 @@ class ReceiveVideoChunks(APIView):
             'batch': batch.id,
             'video_chunk': video_file,
             'chunk_serial': chunk_serial,
+            'record_id': record_id,
         }
 
         serializer = VideoChunkSerializer(data=data)
         if serializer.is_valid():
-            try:
-                with transaction.atomic():
-                    serializer.save()
-                    print('Video chunk saved to DB')
-                    return Response({"status": "Video chunk added to DB"}, status=status.HTTP_201_CREATED)
+            try:                
+                serializer.save()
+                print('Video chunk saved to DB')
+                return Response({"status": "Video chunk added to DB"}, status=status.HTTP_201_CREATED)
             except Exception as e:
                 print('Error while saving video chunk - ', str(e), serializer.errors)
                 return Response({"error": "Failed to save video chunk", "details": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -45,8 +45,8 @@ class ReceiveVideoChunks(APIView):
 class BindVideoChunks(APIView):
     ''' To bind video chunks and save to DB and delete all small chunks from local storage. '''
 
-    def post(self, request, batch_name, batch_date, *args, **kwargs):
-        video_binding_process.delay(batch_name, batch_date)
+    def post(self, request, batch_name, batch_date, record_id, *args, **kwargs):
+        video_binding_process.delay(batch_name, batch_date, record_id)
         return Response({"status": f'video making for {batch_name} dated on {batch_date} accepted.'}, status=status.HTTP_202_ACCEPTED)
     
 from .serializers import SessionSerializer

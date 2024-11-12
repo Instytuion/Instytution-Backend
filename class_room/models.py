@@ -8,6 +8,7 @@ class VideoChunks(models.Model):
     video_chunk = models.FileField(upload_to='video_chunks/', null=False)
     chunk_serial = models.IntegerField()
     uploaded_at = models.DateField(auto_now_add=True)
+    record_id = models.CharField(null=True)
 
 class SessionVideos(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)

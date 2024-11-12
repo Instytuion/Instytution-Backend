@@ -9,11 +9,11 @@ from cloudinary.uploader import upload
 
 @shared_task
 @transaction.atomic
-def video_binding_process(batch_name, batch_date):
+def video_binding_process(batch_name, batch_date, record_id):
     print('BindVideoChunks process called...')
     date_obj = parse_date(batch_date)
     
-    video_chunks = VideoChunks.objects.filter(batch__name=batch_name, uploaded_at=date_obj).order_by('chunk_serial')
+    video_chunks = VideoChunks.objects.filter(batch__name=batch_name, uploaded_at=date_obj, record_id=record_id).order_by('chunk_serial')
     if not video_chunks.exists():
         print('no video chunks found to process...')
         return None
