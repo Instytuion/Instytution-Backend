@@ -22,6 +22,3 @@ class SubCategoryListAPIView(generics.ListAPIView):
             raise NotFound("No subcategories found for this category",code=status.HTTP_404_NOT_FOUND)
 
         return queryset
-    
-    
-    
