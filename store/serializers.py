@@ -11,7 +11,7 @@ class ProductSubCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductSubCategories
-        fields = ['name', 'category_name']
+        fields = ['id', 'name', 'category_name']
         extra_kwargs = {
             'name': {'required': True}  
         }
@@ -25,7 +25,7 @@ class ProductSubCategorySerializer(serializers.ModelSerializer):
 
         
         try:
-            category = ProductCategories.objects.get(name=category_name)
+            category = ProductCategories.objects.get(name__iexact=category_name)
         except ObjectDoesNotExist:
             raise serializers.ValidationError(f"Category '{category_name}' does not exist.")
         
