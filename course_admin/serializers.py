@@ -293,4 +293,9 @@ class BatchSerializer(serializers.ModelSerializer):
         return instance
 
     
-    
+class CoursePurchaseReportSerializer(serializers.Serializer):
+    """
+    Serializer for course purchase report.
+    """
+    year = serializers.IntegerField(min_value=1900, max_value=2100)
+    month = serializers.IntegerField(min_value=1, max_value=12)

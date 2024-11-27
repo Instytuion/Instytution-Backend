@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
-from accounts.permissions import IsCourseAdmin
+from accounts.permissions import IsCourseAdmin , IsAdminAndAuthenticated
 from courses.models import Course
 from urllib.parse import unquote
 from rest_framework.serializers import ValidationError
@@ -221,3 +221,51 @@ class LessonPdfCreateView(generics.CreateAPIView):
             created_by=self.request.user,
             updated_by=self.request.user
         )
+
+from datetime import datetime, timedelta
+from payments.models import CoursePayment
+from django.db.models.functions import TruncDay
+from django.db.models import Count
+
+class CoursePurchaseReportApiVeiw(APIView):
+    """
+    To get the purchase report of courses in a Month
+    """
+    permission_classes = [IsCourseAdmin | IsAdminAndAuthenticated]
+
+    def post(self, request):
+        serializer = CoursePurchaseReportSerializer(data=request.data)
+        if serializer.is_valid():
+            year = serializer.validated_data['year']
+            month = serializer.validated_data['month']
+        
+            start_date = datetime(year, month, 1).date()
+            if month == 12:
+                end_date = (datetime(year + 1, 1, 1) - timedelta(days=1)).date()
+            else:
+                end_date = (datetime(year, month + 1, 1) - timedelta(days=1)).date()
+
+            daily_payment_counts = (
+                CoursePayment.objects.filter(created_at__date__range=[start_date, end_date])
+                .annotate(day=TruncDay('created_at'))
+                .values('day')
+                .annotate(count=Count('id'))
+                .order_by('day')
+            )
+            
+            date_count_map = {date: 0 for date in [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]}
+            
+            for record in daily_payment_counts:
+                date_count_map[record['day'].date()] = record['count']
+            
+            # Convert to a list of dictionaries for the response
+            response_data = [{'date': date, 'count': count} for date, count in date_count_map.items()]
+            
+            return Response({
+                "start_date": start_date,
+                "end_date": end_date,
+                "purchase_report": response_data
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

@@ -18,4 +18,5 @@ urlpatterns = [
     path('batches/<str:course_name>/', ListCreateBatchView.as_view(), name='list_Create_batches'),
     path('batch/<int:pk>/', RetrieveUpdateBatchView.as_view(), name='Retreive_update_batches'),
     path('add_lesson_pdf/', LessonPdfCreateView.as_view(), name='add_lesson_pdf'),
+    path('courses-purchase-report/', CoursePurchaseReportApiVeiw.as_view(), name='courses_purchase_report'),
 ]
