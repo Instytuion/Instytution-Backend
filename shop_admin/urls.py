@@ -10,5 +10,6 @@ urlpatterns = [
     path('product-specific-detail/create/<int:pk>',ProductSpecificDetailCreateView.as_view(), name='product-specific-detail-create'),          
     path('product-specific-detail/get-update/<int:pk>',ProductDetailRetrieveUpdateView.as_view(), name='product-specific-detail-get-update'),          
     path('product-images/get-update-delete/<int:pk>',ProductImageRetriveUpdateDeleteView.as_view(), name='product-images-get-update-delete'),          
-    path('product-images/list-create/<int:pk>',ProductImagesListCreateView.as_view(), name='product-images-list-create'),          
+    path('product-images/list-create/<int:pk>',ProductImagesListCreateView.as_view(), name='product-images-list-create'),  
+    path('store-purchase-report/', StorePurchaseReportApiVeiw.as_view(), name='store_purchase_report'),        
 ]
