@@ -234,7 +234,7 @@ class CoursePurchaseReportApiVeiw(APIView):
     permission_classes = [IsCourseAdmin | IsAdminAndAuthenticated]
 
     def post(self, request):
-        serializer = CoursePurchaseReportSerializer(data=request.data)
+        serializer = PurchaseReportSerializer(data=request.data)
         if serializer.is_valid():
             year = serializer.validated_data['year']
             month = serializer.validated_data['month']

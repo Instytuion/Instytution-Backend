@@ -1,7 +1,7 @@
 from rest_framework import generics, filters
 from store.serializers import ProductSerializer
 from store.models import Products
-from accounts.permissions import IsShopAdmin
+from accounts.permissions import IsShopAdmin , IsAdminAndAuthenticated
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from store.filters import ProductFilter
@@ -143,4 +143,58 @@ class ProductImagesListCreateView(generics.ListCreateAPIView):
     
 
      
-    
+
+from datetime import datetime, timedelta
+from payments.models import CoursePayment
+from django.db.models.functions import TruncDate
+from django.db.models import Count
+from course_admin.serializers import PurchaseReportSerializer
+from order.models import OrderItem
+from rest_framework.views import APIView
+from django.db.models import Sum
+
+class StorePurchaseReportApiVeiw(APIView):
+    """
+    To get the purchase report of Store in a Month
+    """
+    permission_classes = [IsShopAdmin | IsAdminAndAuthenticated]
+
+    def post(self, request):
+        serializer = PurchaseReportSerializer(data=request.data)
+        if serializer.is_valid():
+            year = serializer.validated_data['year']
+            month = serializer.validated_data['month']
+        
+            start_date = datetime(year, month, 1).date()
+            if month == 12:
+                end_date = (datetime(year + 1, 1, 1) - timedelta(days=1)).date()
+            else:
+                end_date = (datetime(year, month + 1, 1) - timedelta(days=1)).date()
+
+            date_quantity_map = (
+                OrderItem.objects
+                .select_related('order')
+                .filter(order__created_at__date__range=(start_date, end_date))
+                .annotate(order_date=TruncDate('order__created_at'))
+                .values('order_date')
+                .annotate(
+                    total_quantity=Sum('quantity'),
+                )
+                .order_by('order_date')
+            )
+            
+            date_count_map = {date: 0 for date in [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]}
+            
+            for record in date_quantity_map:
+                date_count_map[record['order_date']] = record['total_quantity']
+
+            # Convert to a list of dictionaries for the response
+            response_data = [{'date': date, 'count': count} for date, count in date_count_map.items()]
+
+            return Response({
+                "start_date": start_date,
+                "end_date": end_date,
+                "purchase_report": response_data
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
